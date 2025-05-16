@@ -1,0 +1,140 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <!-- כפתור להגדרת שעות פתיחה -->
+        <Button
+            android:id="@+id/btn_set_opening_hours"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set Opening Hours"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#6200EE"
+            android:textColor="@android:color/white" />
+
+        <!-- כותרת להסבר -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Menu Products"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:textColor="#000" />
+
+        <!-- תמונה -->
+        <ImageView
+            android:id="@+id/product_image"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/ic_food_placeholder"
+            android:scaleType="centerCrop"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Add Image"
+            android:layout_marginBottom="16dp" />
+
+        <!-- שדות -->
+        <EditText
+            android:id="@+id/input_product_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Product ID"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/input_product_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Product Name"
+            android:inputType="textPersonName"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/input_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Price"
+            android:inputType="numberDecimal"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/input_stock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Stock"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/input_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Category"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/input_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:layout_marginTop="12dp" />
+
+        <!-- Requires Freshness -->
+        <CheckBox
+            android:id="@+id/checkbox_requires_freshness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Requires Freshness" />
+
+        <!-- Add Add-On -->
+        <Button
+            android:id="@+id/btn_add_addon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Add-On"
+            android:layout_marginTop="12dp" />
+
+        <!-- Summary of added AddOns -->
+        <TextView
+            android:id="@+id/addons_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No Add-Ons Yet"
+            android:textColor="#555"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+
+        <!-- כפתור שמירה -->
+        <Button
+            android:id="@+id/btn_save_product"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Product" />
+
+        <Button
+            android:id="@+id/btn_delete_product"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Product"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>

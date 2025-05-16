@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/backgroundColor">
+
+    <!-- כותרת יצירת חשבון -->
+    <TextView
+        android:layout_marginTop="40dp"
+        android:id="@+id/createAccountTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Account"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="@color/primaryTextColor"
+        android:layout_gravity="center"
+        android:paddingBottom="16dp" />
+
+    <!-- שדה שם משתמש -->
+    <EditText
+        android:id="@+id/userNameInput"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="16dp"
+        android:hint="Enter Username"
+        android:padding="12dp"
+        android:background="@drawable/input_background"
+        android:textColor="@color/primaryTextColor"
+        android:inputType="textPersonName"
+        android:textSize="16sp" />
+
+    <!-- שדה אימייל -->
+    <EditText
+        android:id="@+id/editTextEmail"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="16dp"
+        android:hint="Enter Email"
+        android:inputType="textEmailAddress"
+        android:padding="12dp"
+        android:background="@drawable/input_background"
+        android:textColor="@color/primaryTextColor"
+        android:textSize="16sp" />
+
+    <!-- שדה סיסמה -->
+    <EditText
+        android:layout_marginTop="10dp"
+        android:id="@+id/editTextPassword"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="16dp"
+        android:hint="Enter Password"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        android:background="@drawable/input_background"
+        android:textColor="@color/primaryTextColor"
+        android:textSize="16sp" />
+
+    <!-- שדה אישור סיסמה -->
+    <EditText
+        android:layout_marginTop="10dp"
+        android:id="@+id/editTextConfirmPassword"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="16dp"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        android:background="@drawable/input_background"
+        android:textColor="@color/primaryTextColor"
+        android:textSize="16sp" />
+
+    <!-- כפתור יצירת חשבון -->
+    <Button
+        android:onClick="createAccount"
+        android:layout_marginTop="10dp"
+        android:id="@+id/buttonCreateAccount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Create Account"
+        android:textSize="18sp"
+        android:textColor="@color/buttonTextColor"
+        android:background="@drawable/button_background" />
+
+    <!-- טקסט מעבר להתחברות -->
+    <TextView
+        android:id="@+id/textViewAlreadyHaveAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:clickable="true"
+        android:text="Already have an account? Sign In"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:padding="8dp" />
+
+</LinearLayout>

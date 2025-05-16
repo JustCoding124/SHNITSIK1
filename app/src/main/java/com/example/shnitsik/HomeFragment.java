@@ -1,0 +1,442 @@
+package com.example.shnitsik;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import android.app.AlertDialog;
+import android.media.Image;
+import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class HomeFragment extends Fragment {
+
+    private RecyclerView recyclerView;
+    private TextView topProduct;
+    private TextView orderLoadTextView;
+    private MyAdapter adapter;
+    private LinearLayout adminSection;
+    private LinearLayout userSection;
+    private MyMenuAdapter menueAdapter;
+    private FirebaseUser currentUser;
+    private List<Order> orderList;
+    private List<Product> menueList;
+    private CartManager cartManager;
+    private final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate את ה-XML של הפרגמנט
+        View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+        this.adminSection = rootView.findViewById(R.id.adminSection);
+        this.userSection = rootView.findViewById(R.id.userSection);
+        this.userSection.setVisibility(View.GONE);
+        this.adminSection.setVisibility(View.GONE);
+        this.orderList = new ArrayList<>();
+        this.recyclerView = rootView.findViewById(R.id.recyclerView);
+        this.adapter = new MyAdapter(getContext(),this.orderList);
+        recyclerView.setAdapter(adapter);
+        this.adapter.notifyDataSetChanged();
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        this.menueList = new ArrayList<>();
+        this.menueAdapter = new MyMenuAdapter(getContext(), menueList);
+        this.recyclerView = rootView.findViewById(R.id.menuRecyclerView);
+        recyclerView.setAdapter(menueAdapter);
+        this.menueAdapter.notifyDataSetChanged();
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // קבלת ה-UID של המשתמש הנוכחי
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = null;
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        }
+        DatabaseReference roleRef = database.getReference("Root").child("Users").child(userId).child("role");
+        roleRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Boolean role = task.getResult().getValue(Boolean.class);
+                if (role != null && role) {
+                    // אם role == true (אדמין)
+                    // הצג את התוכן למנהל
+                    adminOnCreate(rootView);
+                } else {
+                    // אם role != true (לא אדמין)
+                    // הצג תוכן אחר
+                    String userIdlambda = currentUser.getUid();
+                    userOnCreate(rootView,userIdlambda);
+                }
+            } else {
+                Toast.makeText(getActivity(), "No clear user access permissions " , Toast.LENGTH_LONG).show();
+            }
+        });
+
+        return rootView;  // מחזיר את ה-View של הפרגמנט
+    }
+    public void adminOnCreate(View rootView){
+        this.userSection.setVisibility(View.GONE);
+        this.adminSection.setVisibility(View.VISIBLE);
+        // אתחול RecyclerView
+
+        recyclerViewInitialize();
+
+        this.orderLoadTextView = rootView.findViewById(R.id.rushHourTextView);
+        this.topProduct = rootView.findViewById(R.id.topProductTextView);
+    }
+
+    public void recyclerViewInitialize() {
+        DatabaseReference ordersRef = database.getReference("Root").child("Orders");
+        ordersRef.orderByChild("idealPrepTime").startAt(getTodayDate()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                HomeFragment.this.orderList.clear();  // רוקן את הרשימה הישנה
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Order order = snapshot.getValue(Order.class);  // להמיר את המידע לסוג Order
+                    if (order !=null)
+                        HomeFragment.this.orderList.add(order);  // הוסף את ההזמנה לרשימה
+                }
+                adapter.notifyDataSetChanged();
+                updateOrderLoadText(HomeFragment.this.orderList);  // עדכון טקסט השעת עומס
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "שגיאה בהתחברות לדאטאבייס: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public String getTodayDate() {
+        Calendar calendar = Calendar.getInstance();  // מקבל את התאריך והשעה הנוכחיים
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  // קובע את פורמט התאריך
+        return dateFormat.format(calendar.getTime());  // מחזיר את התאריך בפורמט הרצוי
+    }
+    public void updateOrderLoadText(List<Order> orders) {
+        if (orders.isEmpty()) {
+            this.orderLoadTextView.setText("אין הזמנות כרגע");
+        } else {
+            //חישוב השעת עומס
+            String peakHour = calculatePeakOrderHour(orders);
+            this.orderLoadTextView.setText("Today's Peak Hour: " + peakHour);
+        }
+    }
+    public void updateTopProduct(List<Order> orders) {
+        if (orders.isEmpty()) {
+            this.orderLoadTextView.setText("No Orders Currently");
+        } else {
+            String topProduct1 = findTopProduct(calculateProductFrequency(orders));
+            this.topProduct.setText("Today's Top Selling Product: " + topProduct1);
+        }
+    }
+    public String calculatePeakOrderHour(List<Order> orders) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");  // פורמט שעה (שעה ודקה)
+        Map<String, Integer> hourCounts = new HashMap<>();
+        for (Order order : orders) {
+            String orderHour = dateFormat.format(order.getDateOfOrder()).substring(0, 2); // לדוגמה, אם השעה היא 14:30 אז 14
+            if (hourCounts.containsKey(orderHour)) {
+                hourCounts.put(orderHour, hourCounts.get(orderHour) + 1);
+            } else {
+                hourCounts.put(orderHour, 1);
+            }
+
+        }
+        // מציאת השעה עם הכי הרבה הזמנות
+        String peakHour = null;
+        int maxCount = 0;
+        for (Map.Entry<String, Integer> entry : hourCounts.entrySet()) {
+            if (entry.getValue() > maxCount) {
+                peakHour = entry.getKey();
+                maxCount = entry.getValue();
+            }
+        }
+
+        return peakHour != null ? peakHour + ":00" : "לא ניתן לחשב שעת עומס";
+    }
+    public boolean isToday(long date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date(date));
+
+        Calendar today = Calendar.getInstance();
+        return calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+    }
+    public Map<String, Integer> calculateProductFrequency(@NonNull List<Order> orders) {
+        Map<String, Integer> productFrequency = new HashMap<>();
+        for (Order order : orders) {
+            for (Product product: order.getProducts()) {
+                if (isToday(order.getDateOfOrder())) {
+                    String productname = product.getProductName();
+                    if (productFrequency.containsKey(product)) {
+                        productFrequency.put(product.getProductName(), productFrequency.get(product) + order.getProductAmount(product));
+                    } else {
+                        productFrequency.put(product.getProductName(), order.getProductAmount(product));
+                    }                }
+            }
+        }
+        return productFrequency;
+    }
+    public String findTopProduct(Map<String, Integer> productFrequency) {
+        String topProduct = null;
+        int maxFrequency = 0;
+
+        for (Map.Entry<String, Integer> entry : productFrequency.entrySet()) {
+            if (entry.getValue() > maxFrequency) {
+                topProduct = entry.getKey();
+                maxFrequency = entry.getValue();
+            }
+        }
+
+        return topProduct + " Purchased " + maxFrequency + " times today";
+    }
+    // עבור משתמש רגיל(לא אדמין)
+    public void userOnCreate(View rootView, String userIdlambda){
+        userGreeting(rootView, userIdlambda);
+        this.adminSection.setVisibility(View.GONE);
+        this.userSection.setVisibility(View.VISIBLE);
+
+        // אתחול ה-adapter עם הנתונים שהתקבלו
+        recyclerViewInitializeForUser();
+        ImageView cartImageView = rootView.findViewById(R.id.cartImageView);
+        ImageView profilePictureImageView = rootView.findViewById(R.id.profilePictureImageView);
+        Button checkoutButton = rootView.findViewById(R.id.checkoutButton);
+        cartImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cartDialog();
+            }
+        });
+        profilePictureImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profileChange();
+            }
+        });
+        checkoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                payment();
+            }
+        });
+    }
+    public void recyclerViewInitializeForUser() {
+        FirebaseFirestore.getInstance()
+                .collection("products")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    menueList.clear();
+                    for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
+                        Product product = snapshot.toObject(Product.class);
+                        menueList.add(product);
+                    }
+                    menueAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getActivity(), "Error loading menu: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+    }
+    public void userGreeting(View rootView, String userIdlambda){
+        TextView greetingTextView = rootView.findViewById(R.id.greetingTextView);
+        database.getReference("Root").child("Users").orderByChild("userId").equalTo(userIdlambda).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String username = snapshot.child("userName").getValue(String.class);
+                    greetingTextView.setText("Hello, " +username);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "ERROR LOADING USERNAME " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+    public void profileChange(){
+        // יצירת Layout ראשי (LinearLayout)
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 10);
+
+        // יצירת EditText לשם משתמש חדש
+        final EditText usernameInput = new EditText(getContext());
+        usernameInput.setHint("New Username");
+        layout.addView(usernameInput);
+
+        // יצירת EditText לאימייל חדש
+        final EditText emailInput = new EditText(getContext());
+        emailInput.setHint("New Email Address");
+        emailInput.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        layout.addView(emailInput);
+
+        //  EditText לססמא
+        final EditText passwordInput = new EditText(getContext());
+        passwordInput.setHint("Current Password");
+        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        layout.addView(passwordInput);
+
+
+        // יצירת CheckBox לעדכון אימייל
+        final CheckBox checkBoxEmail = new CheckBox(getContext());
+        checkBoxEmail.setText("Update Email Address");
+        layout.addView(checkBoxEmail);
+
+        // יצירת CheckBox לעדכון שם משתמש
+        final CheckBox checkBoxUsername = new CheckBox(getContext());
+        checkBoxUsername.setText("Update Username");
+        layout.addView(checkBoxUsername);
+
+        // כפתור לעדכון פרופיל
+        Button updateButton = new Button(getContext());
+        updateButton.setText("Update Profile Info");
+        layout.addView(updateButton);
+
+        // כפתור לשחזור ססמא
+        Button resetPasswordButton = new Button(getContext());
+        resetPasswordButton.setText("Replace Password");
+        layout.addView(resetPasswordButton);
+
+        // יצירת AlertDialog עם ה-Layout המוגדר
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(layout).setCancelable(true);
+
+        // מאזין ל-CheckBox של עדכון אימייל
+        checkBoxEmail.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                emailInput.setVisibility(View.VISIBLE);
+            } else {
+                emailInput.setVisibility(View.GONE);
+            }
+        });
+
+        // מאזין ל-CheckBox של עדכון שם משתמש
+        checkBoxUsername.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                usernameInput.setVisibility(View.VISIBLE);
+            } else {
+                usernameInput.setVisibility(View.GONE);
+            }
+        });
+
+        // מאזין לכפתור עדכון פרופיל
+        updateButton.setOnClickListener(v -> {
+            if (checkBoxEmail.isChecked()) {
+                String email = emailInput.getText().toString();
+                if (!email.isEmpty()) {
+                    updateEmail(email, passwordInput.getText().toString());
+                }
+            }
+            if (checkBoxUsername.isChecked()) {
+                String username = usernameInput.getText().toString();
+                if (!username.isEmpty()) {
+                    updateUsername(username);
+                }
+            }
+        });
+
+        // מאזין לכפתור לשחזור ססמא
+        resetPasswordButton.setOnClickListener(v -> {
+            String email = currentUser.getEmail();
+            if (email != null) {
+                sendPasswordResetEmail(email);
+            }
+        });
+
+        // הצגת דיאלוג
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void updateEmail(String newEmail, String currentPassword) {
+        if (this.currentUser != null) {
+            // אם המשתמש מחובר, נבצע אוטנטיקציה מחדש עם הסיסמה הנוכחית
+            AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), currentPassword);
+
+            // אתחול מחדש של האותנטיקציה
+            currentUser.reauthenticate(credential).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // אם האותנטיקציה הצליחה, נעדכן את האימייל
+                    currentUser.updateEmail(newEmail)
+                            .addOnCompleteListener(task1 -> {
+                                if (task1.isSuccessful()) {
+                                    Toast.makeText(getContext(), "Email Updated Successfully", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Error Updating Email", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    // אם האותנטיקציה נכשלה
+                    Toast.makeText(getContext(), "Given Password Incorrect", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+    // פונקציה לעדכון שם משתמש
+    private void updateUsername(String newUsername ) {
+        if (this.currentUser != null) {
+            // אם המשתמש מחובר, נעדכן את שם המשתמש ב-Firebase Realtime Database
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Root").child("Users")
+                    .child(currentUser.getUid());
+            userRef.child("userName").setValue(newUsername)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getContext(), "Username Updated Successfully", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Error Updating Username", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
+    // פונקציה לשחזור ססמא
+    private void sendPasswordResetEmail(String email) {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getContext(), "Password Replacement Link Has Been Sent Via Email", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Error Sending Link Via Email", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    public void cartDialog(){}
+    public void payment(){
+
+    }
+
+
+
+}

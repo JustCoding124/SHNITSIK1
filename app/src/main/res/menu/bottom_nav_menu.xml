@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/home"
+        android:title="@string/home" />
+    <item
+        android:id="@+id/nav_reviews"
+        android:icon="@drawable/reviews"
+        android:title="@string/reviews" />
+
+    <item
+        android:id="@+id/nav_previous_orders"
+        android:icon="@drawable/history"
+        android:title="@string/previous_orders" />
+
+    <item
+        android:id="@+id/navigation_edit"
+        android:icon="@drawable/editmenue"
+        android:title="@string/edit_info" />
+    <item
+        android:id="@+id/navigation_register_an_employee"
+        android:icon="@drawable/registeranemployee"
+        android:title="@string/register_an_emplyee" />
+
+</menu>

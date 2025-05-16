@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "490479101334",
+    "project_id": "shnitsik",
+    "storage_bucket": "shnitsik.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490479101334:android:07d56985055db5550b29b7",
+        "android_client_info": {
+          "package_name": "com.example.shnitsik"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIHYSgAez0wraRVmGbx7OS5UWFhk4tLJo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

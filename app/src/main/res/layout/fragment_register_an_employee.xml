@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white">
+
+    <!-- שדה חיפוש -->
+    <EditText
+        android:id="@+id/search_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search By User N"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:padding="10dp"
+        android:background="@drawable/edittext_border"
+        android:textSize="16sp"/>
+
+    <!-- רשימת משתמשים -->
+    <ListView
+        android:id="@+id/user_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:paddingTop="10dp"/>
+
+</LinearLayout>

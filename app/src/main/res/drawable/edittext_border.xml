@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/white"/> <!-- רקע לבן -->
+    <stroke android:width="2dp" android:color="@android:color/darker_gray"/> <!-- גבול אפור -->
+    <corners android:radius="8dp"/> <!-- פינות מעוגלות -->
+    <padding android:left="10dp" android:right="10dp" android:top="5dp" android:bottom="5dp"/>
+</shape>

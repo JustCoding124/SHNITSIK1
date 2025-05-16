@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>colorActiveIndicator
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#FF000000</color>
+    <color name="colorAccent">#FF000000</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#6200EE</color>
+    <color name="buttonBackground" >#1976D2</color> <!-- כחול כהה -->
+    <color name="buttonTextColor">#FFFFFF</color> <!-- טקסט לבן -->
+    <color name="primaryTextColor">#212121</color> <!-- אפור כהה -->
+    <color name="editTextBackground">#FFFFFF</color> <!-- לבן -->
+    <color name="backgroundColor">#E3F2FD</color> <!-- תכלת בהיר -->
+    <color name="bottomNavColor">#ebebeb</color> <!-- שחור לדוגמה -->
+
+
+</resources>
