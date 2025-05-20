@@ -69,12 +69,13 @@
             android:inputType="numberDecimal"
             android:minHeight="48dp" />
 
+        <!-- זמן הכנה -->
         <EditText
-            android:id="@+id/input_stock"
+            android:id="@+id/input_prep_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Stock"
+            android:hint="Preparation Time (minutes)"
             android:inputType="number"
             android:minHeight="48dp" />
 
@@ -100,12 +101,13 @@
         <CheckBox
             android:id="@+id/checkbox_requires_freshness"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:text="Requires Freshness" />
 
         <!-- Add Add-On -->
         <Button
             android:id="@+id/btn_add_addon"
+            style="@style/MyBlackButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Add Add-On"

@@ -1,4 +1,4 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.shnitsik.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -106,7 +108,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     public String productWideDescription(Order currentOrder) {
         StringBuilder description = new StringBuilder();
-        Product[] products = currentOrder.getProducts();
+        List<Product> products = currentOrder.getProducts();
         for (Product p : products) {
             description.append(p.getProductName()).append(": ").append(p.getAddOnDescription()).append("\n");
         }

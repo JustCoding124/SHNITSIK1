@@ -1,4 +1,4 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +7,8 @@ import androidx.core.app.NotificationCompat;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
+
+import com.example.shnitsik.R;
 
 public class NotificationReceiver extends BroadcastReceiver {
 

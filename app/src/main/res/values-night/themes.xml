@@ -1,12 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SHNITSIK" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <!-- צבע ראשי כהה -->
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <!-- צבע Accent -->
-        <item name="colorAccent">@color/colorAccent</item>
+
+    <!-- סגנון לשימוש ידני בכפתורים בלבד -->
+    <style name="MyBlackButton" parent="Widget.AppCompat.Button">
+        <item name="android:backgroundTint">#000000</item>
+        <item name="android:textColor">#FFFFFF</item>
     </style>
+
+    <!-- בסיס ערכת נושא (עם רקע לבן) -->
+    <style name="Base.Theme.SHNITSIK" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- רקע לבן לאפליקציה -->
+        <item name="android:windowBackground">#FFFFFF</item>
+    </style>
+
+    <!-- ערכת נושא ראשית -->
+    <style name="Theme.SHNITSIK" parent="Base.Theme.SHNITSIK" />
+
 </resources>

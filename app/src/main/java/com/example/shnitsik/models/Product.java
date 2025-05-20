@@ -1,8 +1,9 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import java.util.List;
 
 public class Product {
+    // זמן הכנה בדקות
     private long prepTime;
     private String productId;
     private String productName;
@@ -12,7 +13,6 @@ public class Product {
     private String description;
     private List<AddOn> addOns;
     private boolean requiresFreshness;
-    private boolean available;
     private String imageUrl;
 
     // קונסטרקטור ריק נדרש ל־Firestore
@@ -20,7 +20,7 @@ public class Product {
 
     public Product(String productId, boolean requiresFreshness, String productName, double price,
                    String category, String description,
-                   List<AddOn> addOns, boolean available) {
+                   List<AddOn> addOns) {
         this.productId = productId;
         this.requiresFreshness = requiresFreshness;
         this.productName = productName;
@@ -28,13 +28,17 @@ public class Product {
         this.category = category;
         this.description = description;
         this.addOns = addOns;
-        this.available = available;
     }
+
     public Product(String category, boolean isHeader) {
         this.productName = category;
         this.isHeader = isHeader;
     }
-    public boolean isHeader() { return isHeader; }
+
+    public boolean isHeader() {
+        return isHeader;
+    }
+
     public String getProductId() {
         return this.productId;
     }
@@ -51,6 +55,7 @@ public class Product {
         this.productName = productName;
     }
 
+    // זמן הכנה בדקות
     public long getPrepTime() {
         return this.prepTime;
     }
@@ -97,14 +102,6 @@ public class Product {
 
     public void setAddOns(List<AddOn> addOns) {
         this.addOns = addOns;
-    }
-
-    public boolean isAvailable() {
-        return this.available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
     }
 
     public String getImageUrl() {

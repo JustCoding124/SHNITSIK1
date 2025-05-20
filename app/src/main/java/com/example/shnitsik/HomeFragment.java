@@ -4,10 +4,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import android.app.AlertDialog;
-import android.media.Image;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
-import android.util.Log;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shnitsik.models.CartManager;
+import com.example.shnitsik.models.MyAdapter;
+import com.example.shnitsik.models.MyMenuAdapter;
+import com.example.shnitsik.models.Order;
+import com.example.shnitsik.models.Product;
+import com.example.shnitsik.models.SharedCart;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.database.DataSnapshot;
@@ -59,7 +66,6 @@ public class HomeFragment extends Fragment {
     private final FirebaseDatabase database = FirebaseDatabase.getInstance();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate את ה-XML של הפרגמנט
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
         this.adminSection = rootView.findViewById(R.id.adminSection);
         this.userSection = rootView.findViewById(R.id.userSection);
@@ -67,7 +73,7 @@ public class HomeFragment extends Fragment {
         this.adminSection.setVisibility(View.GONE);
         this.orderList = new ArrayList<>();
         this.recyclerView = rootView.findViewById(R.id.recyclerView);
-        this.adapter = new MyAdapter(getContext(),this.orderList);
+        this.adapter = new MyAdapter(getContext(), this.orderList);
         recyclerView.setAdapter(adapter);
         this.adapter.notifyDataSetChanged();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -79,7 +85,6 @@ public class HomeFragment extends Fragment {
         this.menueAdapter.notifyDataSetChanged();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // קבלת ה-UID של המשתמש הנוכחי
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String userId = null;
         if (currentUser != null) {
@@ -90,26 +95,22 @@ public class HomeFragment extends Fragment {
             if (task.isSuccessful()) {
                 Boolean role = task.getResult().getValue(Boolean.class);
                 if (role != null && role) {
-                    // אם role == true (אדמין)
-                    // הצג את התוכן למנהל
                     adminOnCreate(rootView);
                 } else {
-                    // אם role != true (לא אדמין)
-                    // הצג תוכן אחר
                     String userIdlambda = currentUser.getUid();
-                    userOnCreate(rootView,userIdlambda);
+                    userOnCreate(rootView, userIdlambda);
                 }
             } else {
-                Toast.makeText(getActivity(), "No clear user access permissions " , Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "No clear user access permissions", Toast.LENGTH_LONG).show();
             }
         });
 
-        return rootView;  // מחזיר את ה-View של הפרגמנט
+        return rootView;
     }
-    public void adminOnCreate(View rootView){
+
+    public void adminOnCreate(View rootView) {
         this.userSection.setVisibility(View.GONE);
         this.adminSection.setVisibility(View.VISIBLE);
-        // אתחול RecyclerView
 
         recyclerViewInitialize();
 
@@ -118,28 +119,40 @@ public class HomeFragment extends Fragment {
     }
 
     public void recyclerViewInitialize() {
-        DatabaseReference ordersRef = database.getReference("Root").child("Orders");
-        ordersRef.orderByChild("idealPrepTime").startAt(getTodayDate()).addValueEventListener(new ValueEventListener() {
+        long todayStartMillis = getStartOfTodayMillis();
+        DatabaseReference ordersRef = database.getReference("Root/Orders");
+        ordersRef.orderByKey().startAt(String.valueOf(todayStartMillis)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                HomeFragment.this.orderList.clear();  // רוקן את הרשימה הישנה
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Order order = snapshot.getValue(Order.class);  // להמיר את המידע לסוג Order
-                    if (order !=null)
-                        HomeFragment.this.orderList.add(order);  // הוסף את ההזמנה לרשימה
+                HomeFragment.this.orderList.clear();
+                for (DataSnapshot timeSnapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot orderSnapshot : timeSnapshot.getChildren()) {
+                        Order order = orderSnapshot.getValue(Order.class);
+                        if (order != null && isToday(order.getRequestedTime())) {
+                            HomeFragment.this.orderList.add(order);
+                        }
+                    }
                 }
                 adapter.notifyDataSetChanged();
-                updateOrderLoadText(HomeFragment.this.orderList);  // עדכון טקסט השעת עומס
+                updateOrderLoadText(HomeFragment.this.orderList);
+                updateTopProduct(HomeFragment.this.orderList);
 
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getActivity(), "שגיאה בהתחברות לדאטאבייס: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Error Connecting To DB:" + databaseError.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
-
+    public long getStartOfTodayMillis() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
     public String getTodayDate() {
         Calendar calendar = Calendar.getInstance();  // מקבל את התאריך והשעה הנוכחיים
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  // קובע את פורמט התאריך
@@ -147,7 +160,7 @@ public class HomeFragment extends Fragment {
     }
     public void updateOrderLoadText(List<Order> orders) {
         if (orders.isEmpty()) {
-            this.orderLoadTextView.setText("אין הזמנות כרגע");
+            this.orderLoadTextView.setText("No Orders Yet");
         } else {
             //חישוב השעת עומס
             String peakHour = calculatePeakOrderHour(orders);
@@ -166,7 +179,7 @@ public class HomeFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");  // פורמט שעה (שעה ודקה)
         Map<String, Integer> hourCounts = new HashMap<>();
         for (Order order : orders) {
-            String orderHour = dateFormat.format(order.getDateOfOrder()).substring(0, 2); // לדוגמה, אם השעה היא 14:30 אז 14
+            String orderHour = dateFormat.format(order.getRequestedTime()).substring(0, 2);
             if (hourCounts.containsKey(orderHour)) {
                 hourCounts.put(orderHour, hourCounts.get(orderHour) + 1);
             } else {
@@ -184,7 +197,7 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        return peakHour != null ? peakHour + ":00" : "לא ניתן לחשב שעת עומס";
+        return peakHour != null ? peakHour + ":00" : "Could Not Calculate";
     }
     public boolean isToday(long date) {
         Calendar calendar = Calendar.getInstance();
@@ -196,19 +209,20 @@ public class HomeFragment extends Fragment {
     }
     public Map<String, Integer> calculateProductFrequency(@NonNull List<Order> orders) {
         Map<String, Integer> productFrequency = new HashMap<>();
+
         for (Order order : orders) {
-            for (Product product: order.getProducts()) {
-                if (isToday(order.getDateOfOrder())) {
-                    String productname = product.getProductName();
-                    if (productFrequency.containsKey(product)) {
-                        productFrequency.put(product.getProductName(), productFrequency.get(product) + order.getProductAmount(product));
-                    } else {
-                        productFrequency.put(product.getProductName(), order.getProductAmount(product));
-                    }                }
+            if (!isToday(order.getDateOfOrder())) continue;
+
+            for (Product product : order.getProducts()) {
+                String productName = product.getProductName();
+                int currentCount = productFrequency.containsKey(productName) ? productFrequency.get(productName) : 0;
+                productFrequency.put(productName, currentCount + 1);
             }
         }
+
         return productFrequency;
     }
+
     public String findTopProduct(Map<String, Integer> productFrequency) {
         String topProduct = null;
         int maxFrequency = 0;
@@ -230,6 +244,17 @@ public class HomeFragment extends Fragment {
 
         // אתחול ה-adapter עם הנתונים שהתקבלו
         recyclerViewInitializeForUser();
+        EditText searchEditText = rootView.findViewById(R.id.searchEditText);
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                menueAdapter.filterListByName(s.toString());
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
         ImageView cartImageView = rootView.findViewById(R.id.cartImageView);
         ImageView profilePictureImageView = rootView.findViewById(R.id.profilePictureImageView);
         Button checkoutButton = rootView.findViewById(R.id.checkoutButton);
@@ -258,34 +283,51 @@ public class HomeFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     menueList.clear();
+                    Map<String, List<Product>> categorized = new HashMap<>();
+
                     for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
                         Product product = snapshot.toObject(Product.class);
-                        menueList.add(product);
+                        if (!categorized.containsKey(product.getCategory())) {
+                            categorized.put(product.getCategory(), new ArrayList<>());
+                        }
+                        categorized.get(product.getCategory()).add(product);
                     }
+
+                    // הכנס כותרת קטגוריה ואחריה את המוצרים שלה
+                    for (String category : categorized.keySet()) {
+                        menueList.add(new Product(category, true)); // כותרת
+                        menueList.addAll(categorized.get(category)); // מוצרים
+                    }
+
+                    menueAdapter.setOriginalList(menueList);
                     menueAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(getActivity(), "Error loading menu: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
+
     }
     public void userGreeting(View rootView, String userIdlambda){
         TextView greetingTextView = rootView.findViewById(R.id.greetingTextView);
-        database.getReference("Root").child("Users").orderByChild("userId").equalTo(userIdlambda).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    String username = snapshot.child("userName").getValue(String.class);
-                    greetingTextView.setText("Hello, " +username);
+        database.getReference("Root").child("Users").child(userIdlambda)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        String username = snapshot.child("userName").getValue(String.class);
+                        if (username != null) {
+                            greetingTextView.setText("Hello, " + username);
+                        } else {
+                            greetingTextView.setText("Hello, user");
+                        }
+                    }
 
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getActivity(), "ERROR LOADING USERNAME " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getActivity(), "ERROR LOADING USERNAME " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
+
     public void profileChange(){
         // יצירת Layout ראשי (LinearLayout)
         LinearLayout layout = new LinearLayout(getContext());
@@ -432,10 +474,19 @@ public class HomeFragment extends Fragment {
                     }
                 });
     }
-    public void cartDialog(){}
-    public void payment(){
-
+    public void cartDialog() {
+        startActivity(new Intent(getContext(), CartActivity.class));
     }
+    public void payment() {
+        CartManager cart = SharedCart.getInstance().getCartManager();
+        if (cart.getCart().isEmpty()) {
+            Toast.makeText(getContext(), "The cart is empty. Please add items before proceeding.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        startActivity(new Intent(getContext(), CheckoutActivity.class));
+    }
+
+
 
 
 

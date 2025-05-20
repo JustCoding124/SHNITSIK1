@@ -4,22 +4,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select day for setting hours:"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
     <Spinner
         android:id="@+id/daySpinner"
         android:layout_width="50dp"
-        android:layout_height="50dp"/>
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"/>
+
+    <CheckBox
+        android:id="@+id/closedCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Closed on this day"
+        android:padding="8dp"
+        android:layout_marginTop="8dp" />
 
     <TimePicker
         android:id="@+id/openingTimePicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:timePickerMode="spinner"
-        android:hour="8"/>
+        android:timePickerMode="spinner" />
 
     <TimePicker
         android:id="@+id/closingTimePicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:timePickerMode="spinner"
-        android:hour="16"/>
+        android:timePickerMode="spinner" />
 </LinearLayout>

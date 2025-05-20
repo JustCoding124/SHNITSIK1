@@ -118,7 +118,8 @@ public class FragmentsCenterActivity extends AppCompatActivity {
         bottomNavigationView.getMenu().findItem(R.id.navigation_home).setVisible(true);
         bottomNavigationView.getMenu().findItem(R.id.navigation_edit).setVisible(true);
         bottomNavigationView.getMenu().findItem(R.id.navigation_register_an_employee).setVisible(true);
-        bottomNavigationView.getMenu().findItem(R.id.nav_reviews).setVisible(false);
+        bottomNavigationView.getMenu().findItem(R.id.nav_reviews).setVisible(true); // ✅ הצג ביקורות גם לאדמין
         bottomNavigationView.getMenu().findItem(R.id.nav_previous_orders).setVisible(false);
     }
+
 }

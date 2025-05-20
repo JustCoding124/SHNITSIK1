@@ -1,4 +1,4 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import android.content.Context;
 import android.view.LayoutInflater;

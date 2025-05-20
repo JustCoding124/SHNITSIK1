@@ -6,15 +6,21 @@
     android:background="@color/white">
 
     <!-- App Logo -->
-    <ImageView
-        android:id="@+id/logoImage"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:src="@drawable/shnitsik_logo" />
 
     <!-- Email Input -->
+
+    <ImageView
+        android:id="@+id/logoImage"
+        android:layout_width="283dp"
+        android:layout_height="144dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/shnitsik_logo" />
+
     <EditText
         android:id="@+id/editTextEmail"
         android:layout_width="match_parent"
@@ -46,14 +52,14 @@
     <!-- Sign-In Button -->
     <Button
         android:id="@+id/buttonSignIn"
+        style="@style/MyBlackButton"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_below="@id/editTextPassword"
         android:layout_marginTop="20dp"
         android:text="Sign In"
         android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/rounded_button" />
+        android:textColor="#FFFFFF" />
 
     <!-- Forgot Password Link -->
     <TextView
@@ -95,7 +101,7 @@
     <CheckBox
         android:id="@+id/rememberMeCheckBox"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_below="@id/SignUp"
         android:layout_alignParentStart="true"
         android:layout_marginTop="7dp"

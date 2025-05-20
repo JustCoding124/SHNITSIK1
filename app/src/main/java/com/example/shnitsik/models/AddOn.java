@@ -1,4 +1,4 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 public class AddOn {
     private String addOnName;

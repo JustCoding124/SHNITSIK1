@@ -17,6 +17,7 @@
 
     <Button
         android:id="@+id/selectTimeButton"
+        style="@style/MyBlackButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select Time"
@@ -30,13 +31,13 @@
         <RadioButton
             android:id="@+id/radioCash"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:text="Cash" />
 
         <RadioButton
             android:id="@+id/radioCreditCard"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:text="Credit Card" />
     </RadioGroup>
 

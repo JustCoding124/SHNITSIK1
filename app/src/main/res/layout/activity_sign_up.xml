@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/backgroundColor">
+    android:padding="16dp">
 
     <!-- כותרת יצירת חשבון -->
     <TextView
@@ -78,6 +77,7 @@
     <!-- כפתור יצירת חשבון -->
     <Button
         android:onClick="createAccount"
+        style="@style/MyBlackButton"
         android:layout_marginTop="10dp"
         android:id="@+id/buttonCreateAccount"
         android:layout_width="match_parent"
@@ -85,8 +85,7 @@
         android:layout_marginBottom="16dp"
         android:text="Create Account"
         android:textSize="18sp"
-        android:textColor="@color/buttonTextColor"
-        android:background="@drawable/button_background" />
+        android:textColor="@color/buttonTextColor" />
 
     <!-- טקסט מעבר להתחברות -->
     <TextView

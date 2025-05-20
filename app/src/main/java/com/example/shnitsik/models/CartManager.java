@@ -1,4 +1,4 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 import java.util.HashSet;
 
 public class CartManager {

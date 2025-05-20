@@ -1,9 +1,7 @@
-package com.example.shnitsik;
-import android.view.OnReceiveContentListener;
+package com.example.shnitsik.models;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 
 public class User {

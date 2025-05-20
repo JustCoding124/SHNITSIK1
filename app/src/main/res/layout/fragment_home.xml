@@ -111,24 +111,35 @@
             android:textStyle="bold"
             android:textColor="@color/black"
             android:layout_marginBottom="16dp" />
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Search product..."
+            android:padding="8dp"
+            android:background="@drawable/edit_text_background"
+            android:inputType="text"
+            android:layout_margin="8dp"/>
+
 
         <!-- רשימת פריטים -->
+
+        <!-- כפתור מעבר לתשלום -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/menuRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="500dp"
+            android:layout_height="466dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
-            android:padding="8dp"
             android:contentDescription="Menu items list"
+            android:padding="8dp"
             android:scrollbars="vertical" />
 
-        <!-- כפתור מעבר לתשלום -->
         <Button
             android:id="@+id/checkoutButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="220dp"
+            android:layout_marginTop="20dp"
             android:backgroundTint="#4CAF50"
             android:padding="12dp"
             android:text="Proceed to Checkout"

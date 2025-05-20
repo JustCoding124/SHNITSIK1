@@ -1,8 +1,10 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import com.bumptech.glide.Glide;
+import com.example.shnitsik.R;
+
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -165,8 +167,7 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
                         product.getPrice(),
                         product.getCategory(),
                         product.getDescription(),
-                        new ArrayList<>(selectedAddOns),
-                        product.isAvailable()
+                        new ArrayList<>(selectedAddOns)
                 );
                 productToCart.setImageUrl(product.getImageUrl());
                 cartManager.addProductToCart(productToCart);

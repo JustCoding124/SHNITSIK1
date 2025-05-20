@@ -6,14 +6,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.shnitsik.models.AddOn;
+import com.example.shnitsik.models.CartManager;
+import com.example.shnitsik.models.Product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
@@ -44,7 +48,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         Product product = cartProducts.get(position);
         holder.productName.setText(product.getProductName());
-        holder.productPrice.setText("$" + cartManager.getTotalProductPriceWithAddOns(product));
+        holder.productPrice.setText("₪" + cartManager.getTotalProductPriceWithAddOns(product));
 
         Glide.with(context)
                 .load(product.getImageUrl())
@@ -66,31 +70,76 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     private void showEditDialog(Product product, int position) {
-        List<AddOn> addOns = product.getAddOns();
-        String[] addOnNames = new String[addOns.size()];
-        boolean[] selected = new boolean[addOns.size()];
+        List<AddOn> originalAddOns = product.getAddOns();
+        List<AddOn> clonedAddOns = new ArrayList<>();
 
-        for (int i = 0; i < addOns.size(); i++) {
-            addOnNames[i] = addOns.get(i).getAddOnName();
-            selected[i] = addOns.get(i).isSelected();
+        for (AddOn addOn : originalAddOns) {
+            AddOn clone = new AddOn(addOn.getAddOnName(), addOn.getPricePerOneAmount());
+            clone.setAmount(addOn.getAmount());
+            clonedAddOns.add(clone);
         }
 
+        String[] addOnNames = new String[clonedAddOns.size()];
+        boolean[] selected = new boolean[clonedAddOns.size()];
+
+        for (int i = 0; i < clonedAddOns.size(); i++) {
+            AddOn addon = clonedAddOns.get(i);
+            addOnNames[i] = addon.getAddOnName() + " (₪" + addon.getPricePerOneAmount() + ")";
+            selected[i] = addon.getAmount() > 0;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Edit " + product.getProductName());
+        builder.setMultiChoiceItems(addOnNames, selected, (dialog, which, isChecked) -> {
+            if (!isChecked) {
+                clonedAddOns.get(which).setAmount(0);
+            } else {
+                showQuantityDialog(clonedAddOns.get(which));
+            }
+        });
+
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            product.setAddOns(clonedAddOns);
+            cartProducts.set(position, product); // במקום cartManager.getCart().set
+            notifyItemChanged(position);
+            if (cartChangedListener != null) cartChangedListener.onCartChanged();
+        });
+
+        builder.setNegativeButton("Remove", (dialog, which) -> {
+            cartManager.removeProductFromCart(product);
+            cartProducts.remove(position);
+            notifyItemRemoved(position);
+            if (cartChangedListener != null) cartChangedListener.onCartChanged();
+        });
+
+        builder.setNeutralButton("Cancel", null);
+        builder.show();
+    }
+
+    private void showQuantityDialog(AddOn addOn) {
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_addon_quantity, null);
+        SeekBar seekBar = view.findViewById(R.id.quantitySeekBar);
+        TextView quantityValue = view.findViewById(R.id.quantityValue);
+
+        seekBar.setProgress(addOn.getAmount() > 0 ? addOn.getAmount() - 1 : 0);
+        quantityValue.setText(String.valueOf(seekBar.getProgress() + 1));
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                quantityValue.setText(String.valueOf(progress + 1));
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
         new AlertDialog.Builder(context)
-                .setTitle("Edit " + product.getProductName())
-                .setMultiChoiceItems(addOnNames, selected, (dialog, which, isChecked) -> {
-                    addOns.get(which).setAmount(isChecked ? 1 : 0);
+                .setTitle("Select Quantity for " + addOn.getAddOnName())
+                .setView(view)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    int quantity = seekBar.getProgress() + 1;
+                    addOn.setAmount(quantity);
                 })
-                .setPositiveButton("Save", (dialog, which) -> {
-                    notifyItemChanged(position);
-                    if (cartChangedListener != null) cartChangedListener.onCartChanged();
-                })
-                .setNegativeButton("Remove", (dialog, which) -> {
-                    cartManager.removeProductFromCart(product);
-                    cartProducts.remove(position);
-                    notifyItemRemoved(position);
-                    if (cartChangedListener != null) cartChangedListener.onCartChanged();
-                })
-                .setNeutralButton("Cancel", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 

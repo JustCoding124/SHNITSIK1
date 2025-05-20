@@ -1,20 +1,8 @@
-package com.example.shnitsik;
+package com.example.shnitsik.models;
 
 import android.util.Log;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import com.google.firebase.database.*;
+import java.util.*;
 
 public class Order {
     private long prepTime;
@@ -23,17 +11,21 @@ public class Order {
     private long dateOfOrder;
     private String ordererUID;
     private boolean isFinished = false;
-    private Product[] products;
+    private List<Product> products = new ArrayList<>();
     private boolean requiresFreshness;
     private long requestedTime;
     private String productsString = "";
+
+    public Order() {
+        // נדרש על ידי Firebase
+    }
 
     public Order(String oId, Date dateOfOrder, String ordererUID, int productsLen) {
         this.dateOfOrder = dateOfOrder.getTime();
         this.ordererUID = ordererUID;
         this.oId = oId;
-        this.products = new Product[productsLen];
         this.isFinished = false;
+        this.products = new ArrayList<>(productsLen); // מוכן לגודל משוער
         calculatePrepTime();
     }
 
@@ -41,16 +33,12 @@ public class Order {
         return requestedTime;
     }
 
-    public void setIdealPrepTime(long idealPrepTime) {
-        this.idealPrepTime = idealPrepTime;
+    public void setRequestedTime(long timeInMillis) {
+        this.requestedTime = timeInMillis;
     }
 
     public long getDateOfOrder() {
         return dateOfOrder;
-    }
-
-    public void setRequestedTime(long timeInMillis) {
-        this.requestedTime = timeInMillis;
     }
 
     public void setDateOfOrder(long dateOfOrder) {
@@ -73,12 +61,13 @@ public class Order {
         this.ordererUID = ordererUID;
     }
 
-    public Product[] getProducts() {
+    public List<Product> getProducts() {
         return products;
     }
 
-    public void setProducts(Product[] products) {
-        System.arraycopy(products, 0, this.products, 0, products.length);
+    public void setProducts(List<Product> products) {
+        this.products = products;
+        this.productsString = "";
         for (Product product : this.products) {
             this.productsString += String.format(", %s", product.getProductName());
         }
@@ -107,7 +96,7 @@ public class Order {
     public int getProductAmount(Product p) {
         int amount = 0;
         for (Product product : this.products) {
-            if (product == p)
+            if (product.equals(p)) // שים לב: השוואה לפי equals
                 amount += 1;
         }
         return amount;
@@ -124,8 +113,15 @@ public class Order {
     }
 
     public long getIdealPrepTime() {
-        calculateIdealPreparationTime();
         return this.idealPrepTime;
+    }
+
+    public long getPrepTime() {
+        return this.prepTime;
+    }
+
+    public void setIdealPrepTime(long idealPrepTime) {
+        this.idealPrepTime = idealPrepTime;
     }
 
     public void calculatePrepTime() {
@@ -140,82 +136,48 @@ public class Order {
         this.prepTime = (count > 0) ? total / count : 0;
     }
 
-
-    public void calculateIdealPreparationTime() {
+    public void calculateIdealPreparationTimeFirebaseBasedSync() {
         if (this.requiresFreshness) {
-            this.idealPrepTime = requestedTime - this.prepTime;
-        } else {
-            this.idealPrepTime = findBestTimeSlotSync();
+            this.idealPrepTime = this.requestedTime - this.prepTime;
+            return;
         }
-    }
 
-    public long findBestTimeSlotSync() {
-        long bestTime;
-        List<Order> orders = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(1);
+        Calendar requestedDay = Calendar.getInstance();
+        requestedDay.setTimeInMillis(this.requestedTime);
+        requestedDay.set(Calendar.HOUR_OF_DAY, 0);
+        requestedDay.set(Calendar.MINUTE, 0);
+        requestedDay.set(Calendar.SECOND, 0);
+        requestedDay.set(Calendar.MILLISECOND, 0);
 
-        DatabaseReference ordersRef = FirebaseDatabase.getInstance().getReference("Root/OrdersSortedByIdealTime");
-        ordersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot bucket : dataSnapshot.getChildren()) {
-                    for (DataSnapshot snapshot : bucket.getChildren()) {
-                        Order order = snapshot.getValue(Order.class);
-                        if (order != null) {
-                            orders.add(order);
+        long dayStart = requestedDay.getTimeInMillis();
+        long dayEnd = dayStart + 24 * 60 * 60 * 1000;
+
+        DatabaseReference ordersRef = FirebaseDatabase.getInstance().getReference("Root/Orders");
+
+        ordersRef.orderByChild("requestedTime").startAt(dayStart).endAt(dayEnd)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        long latestEndTime = dayStart;
+
+                        for (DataSnapshot orderSnap : snapshot.getChildren()) {
+                            Order existingOrder = orderSnap.getValue(Order.class);
+                            if (existingOrder != null) {
+                                long end = existingOrder.idealPrepTime + existingOrder.prepTime;
+                                if (end > latestEndTime) {
+                                    latestEndTime = end;
+                                }
+                            }
                         }
+
+                        idealPrepTime = Math.max(latestEndTime, System.currentTimeMillis());
                     }
-                }
-                latch.countDown();
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.e("Firebase", "Error retrieving orders", databaseError.toException());
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Calendar now = Calendar.getInstance();
-        Calendar requested = Calendar.getInstance();
-        requested.setTimeInMillis(this.requestedTime);
-
-        boolean isToday = now.get(Calendar.YEAR) == requested.get(Calendar.YEAR) &&
-                now.get(Calendar.DAY_OF_YEAR) == requested.get(Calendar.DAY_OF_YEAR);
-
-        if (isToday) {
-            bestTime = System.currentTimeMillis();
-        } else {
-            requested.set(Calendar.HOUR_OF_DAY, 8);
-            requested.set(Calendar.MINUTE, 0);
-            requested.set(Calendar.SECOND, 0);
-            requested.set(Calendar.MILLISECOND, 0);
-            bestTime = requested.getTimeInMillis();
-        }
-
-        Collections.sort(orders, new Comparator<Order>() {
-            @Override
-            public int compare(Order o1, Order o2) {
-                return Long.compare(o1.getIdealPrepTime(), o2.getIdealPrepTime());
-            }
-        });
-
-        for (Order order : orders) {
-            long orderStart = order.getIdealPrepTime();
-            long orderEnd = orderStart + order.prepTime;
-
-            if (bestTime + this.prepTime <= orderStart) {
-                return bestTime;
-            }
-            bestTime = Math.max(bestTime, orderEnd);
-        }
-
-        return bestTime;
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        idealPrepTime = System.currentTimeMillis();
+                        Log.e("Order", "Failed to calculate idealPrepTime", error.toException());
+                    }
+                });
     }
 }
