@@ -109,7 +109,7 @@ public class RegisterAnEmployeeFragment extends Fragment {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 // אם המשתמש לוחץ "Yes", נעדכן את ה-role ב-Firebase ל-true
                                                 updateUserRole(username.split("\n")[0]);
-                                                Toast.makeText(getContext(), "Role changed to Admin", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getContext(), "Role changed", Toast.LENGTH_SHORT).show();
                                             }
                                         })
                                         .setNegativeButton("No", new DialogInterface.OnClickListener() {

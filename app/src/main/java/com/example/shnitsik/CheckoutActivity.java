@@ -60,7 +60,7 @@ public class CheckoutActivity extends AppCompatActivity {
         cartManager = SharedCart.getInstance().getCartManager();
         selectedTime = Calendar.getInstance();
 
-        PaymentConfiguration.init(getApplicationContext(), "pk_test_...");
+        PaymentConfiguration.init(getApplicationContext(), "pk_test_51RP3MuBDGmywb1ECke5sT7Upe1dsA7Q01y8pIhBLn0Ovgj4YoTXviTpGLwys093313TdZ0BlAu8PN52dIUk8A9uD00dJBCut95");
         paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
 
         fetchOpeningHours();
@@ -127,15 +127,18 @@ public class CheckoutActivity extends AppCompatActivity {
                 closeTime.set(Calendar.HOUR_OF_DAY, closeHour);
                 closeTime.set(Calendar.MINUTE, closeMinute);
 
-                if (selectedTime.getTimeInMillis() < System.currentTimeMillis()) {
-                    Toast.makeText(this, "Selected time has already passed", Toast.LENGTH_LONG).show();
-                } else if (selectedTime.before(openTime) || selectedTime.after(closeTime)) {
-                    Toast.makeText(this, "Allowed between " + formatTime(openHour, openMinute)
-                            + " and " + formatTime(closeHour, closeMinute), Toast.LENGTH_LONG).show();
-                } else {
-                    String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
-                    dateTimeTextView.setText("Selected Time: " + formatted);
-                }
+//                if (selectedTime.getTimeInMillis() < System.currentTimeMillis()) {
+//                    Toast.makeText(this, "Selected time has already passed", Toast.LENGTH_LONG).show();
+//                } else if (selectedTime.before(openTime) || selectedTime.after(closeTime)) {
+//                    Toast.makeText(this, "Allowed between " + formatTime(openHour, openMinute)
+//                            + " and " + formatTime(closeHour, closeMinute), Toast.LENGTH_LONG).show();
+//                } else {
+//                    String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
+//                    dateTimeTextView.setText("Selected Time: " + formatted);
+//                }
+                String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
+                dateTimeTextView.setText("Selected Time: " + formatted);
+
             }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
             timePickerDialog.show();
         }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
