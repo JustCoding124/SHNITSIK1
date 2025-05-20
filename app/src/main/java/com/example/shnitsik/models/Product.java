@@ -7,7 +7,7 @@ public class Product {
     private String productId;
     private String productName;
     private double price;
-    private int stock;
+    private boolean isHeader = false;
     private String category;
     private String description;
     private List<AddOn> addOns;
@@ -19,19 +19,22 @@ public class Product {
     public Product() {}
 
     public Product(String productId, boolean requiresFreshness, String productName, double price,
-                   int stock, String category, String description,
+                   String category, String description,
                    List<AddOn> addOns, boolean available) {
         this.productId = productId;
         this.requiresFreshness = requiresFreshness;
         this.productName = productName;
         this.price = price;
-        this.stock = stock;
         this.category = category;
         this.description = description;
         this.addOns = addOns;
         this.available = available;
     }
-
+    public Product(String category, boolean isHeader) {
+        this.productName = category;
+        this.isHeader = isHeader;
+    }
+    public boolean isHeader() { return isHeader; }
     public String getProductId() {
         return this.productId;
     }
@@ -62,14 +65,6 @@ public class Product {
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    public int getStock() {
-        return this.stock;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
     }
 
     public String getCategory() {

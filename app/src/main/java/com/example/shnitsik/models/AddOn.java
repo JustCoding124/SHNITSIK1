@@ -3,13 +3,11 @@ package com.example.shnitsik;
 public class AddOn {
     private String addOnName;
     private int amount=1;
-    private int stock;
     private double pricePerOneAmount;
     public AddOn(){}
-    public AddOn(String addOnName,double pricePerOneAmount,int stock){
+    public AddOn(String addOnName,double pricePerOneAmount){
         this.pricePerOneAmount = pricePerOneAmount;
         this.addOnName = addOnName;
-        this.stock = stock;
     }
     public AddOn(String addOnName,int amount){
         this.addOnName = addOnName;
@@ -20,7 +18,6 @@ public class AddOn {
     }
     public String getAddOnName(){return this.addOnName;}
     public int getAmount(){return this.amount;}
-    public int getStock(){return this.stock;}
     public double getPricePerOneAmount(){return this.pricePerOneAmount;}
     public void setAmount(int amount){this.amount = amount;}
     public boolean isSelected() {

@@ -1,0 +1,44 @@
+package com.example.shnitsik;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import androidx.core.app.NotificationCompat;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
+
+public class NotificationReceiver extends BroadcastReceiver {
+
+    private static final String CHANNEL_ID = "order_channel";
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String orderId = intent.getStringExtra("orderId");
+        if (orderId == null) orderId = "Unknown";
+
+        createNotificationChannel(context);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Order in Progress")
+                .setContentText("Order " + orderId + " has started preparation.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(orderId.hashCode(), builder.build());
+    }
+
+    private void createNotificationChannel(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Order Notifications";
+            String description = "Notifies when orders start preparing";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+}
