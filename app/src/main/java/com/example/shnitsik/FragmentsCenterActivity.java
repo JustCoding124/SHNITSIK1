@@ -19,6 +19,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The type Fragments center activity.
+ */
 public class FragmentsCenterActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -68,7 +71,12 @@ public class FragmentsCenterActivity extends AppCompatActivity {
 
     }
 
-    // פונקציה להחלפת פרגמנט
+    /**
+     * Load fragment.
+     *
+     * @param fragment the fragment
+     */
+// פונקציה להחלפת פרגמנט
     public void loadFragment(Fragment fragment) {
         // יצירת Transaction להחלפת פרגמנט
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

@@ -5,6 +5,17 @@
     android:orientation="vertical"
     android:padding="24dp"
     android:background="@android:color/white">
+    <Button
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:drawableStart="@android:drawable/ic_media_previous"
+        android:layout_marginBottom="16dp"/>
+
 
     <TextView
         android:id="@+id/dateTimeTextView"

@@ -1,4 +1,5 @@
-package com.example.shnitsik;
+// Fixed CartAdapter.java
+package com.example.shnitsik.models;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,28 +9,60 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.shnitsik.models.AddOn;
-import com.example.shnitsik.models.CartManager;
-import com.example.shnitsik.models.Product;
+import com.example.shnitsik.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter for displaying products within a shopping cart in a RecyclerView.
+ * This adapter is responsible for taking a list of {@link Product} objects and
+ * presenting them as individual items in the cart UI. It handles the creation
+ * of view holders for each item and binds the product data (name, price, image, add-ons)
+ * to the corresponding views within the item layout.
+ *
+ * Furthermore, this adapter facilitates user interaction with cart items by:
+ * <ul>
+ *     <li>Displaying an edit dialog when an item is clicked, allowing users to modify the selected add-ons and their quantities.</li>
+ *     <li>Providing options within the edit dialog to save changes to the product or remove it entirely from the cart.</li>
+ *     <li>Notifying a {@link OnCartChangedListener} when changes occur in the cart (e.g., item updated or removed),
+ *         enabling other components (like a total price display) to react accordingly.</li>
+ * </ul>
+ *
+ * It collaborates with a {@link CartManager} to persist changes made to the cart,
+ * such as adding, updating, or removing products.
+ *
+ * @author Ariel Kanitork
+ */
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
-    private List<Product> cartProducts;
-    private CartManager cartManager;
-    private OnCartChangedListener cartChangedListener;
+    private final List<Product> cartProducts;
+    private final CartManager cartManager;
+    private final OnCartChangedListener cartChangedListener;
     private Context context;
 
+    /**
+     * The interface On cart changed listener.
+     */
     public interface OnCartChangedListener {
+        /**
+         * On cart changed.
+         */
         void onCartChanged();
     }
 
+    /**
+     * Instantiates a new Cart adapter.
+     *
+     * @param cartProducts the cart products
+     * @param cartManager  the cart manager
+     * @param listener     the listener
+     */
     public CartAdapter(List<Product> cartProducts, CartManager cartManager, OnCartChangedListener listener) {
         this.cartProducts = cartProducts;
         this.cartManager = cartManager;
@@ -47,21 +80,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         Product product = cartProducts.get(position);
-        holder.productName.setText(product.getProductName());
-        holder.productPrice.setText("₪" + cartManager.getTotalProductPriceWithAddOns(product));
 
-        Glide.with(context)
-                .load(product.getImageUrl())
-                .into(holder.productImage);
+        holder.productName.setText(product.getProductName());
+        holder.productPrice.setText("₪" + product.getTotalProductPrice());
+
+        Glide.with(context).clear(holder.productImage);
+        Glide.with(context).load(product.getImageUrl()).into(holder.productImage);
 
         StringBuilder addOnText = new StringBuilder();
         for (AddOn addOn : product.getAddOns()) {
-            if (addOn.isSelected()) {
-                addOnText.append("+ ")
-                        .append(addOn.getAddOnName())
-                        .append(" (x")
-                        .append(addOn.getAmount())
-                        .append(")\n");
+            if (addOn.getAmount() > 0) {
+                addOnText.append("+ ").append(addOn.getAddOnName())
+                        .append(" (x").append(addOn.getAmount()).append(")\n");
             }
         }
         holder.productAddOns.setText(addOnText.toString().trim());
@@ -69,19 +99,24 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.itemView.setOnClickListener(v -> showEditDialog(product, position));
     }
 
+    /**
+     * Shows an edit dialog for a product in the cart.
+     * This dialog allows the user to modify the add-ons of the product,
+     * save the changes, remove the product from the cart, or cancel the operation.
+     *
+     * @param product The product to be edited.
+     * @param position The position of the product in the cart list.
+     */
     private void showEditDialog(Product product, int position) {
-        List<AddOn> originalAddOns = product.getAddOns();
         List<AddOn> clonedAddOns = new ArrayList<>();
-
-        for (AddOn addOn : originalAddOns) {
-            AddOn clone = new AddOn(addOn.getAddOnName(), addOn.getPricePerOneAmount());
-            clone.setAmount(addOn.getAmount());
-            clonedAddOns.add(clone);
+        for (AddOn addOn : product.getAddOns()) {
+            AddOn cloned = new AddOn(addOn.getAddOnName(), addOn.getPricePerOneAmount());
+            cloned.setAmount(addOn.getAmount());
+            clonedAddOns.add(cloned);
         }
 
         String[] addOnNames = new String[clonedAddOns.size()];
         boolean[] selected = new boolean[clonedAddOns.size()];
-
         for (int i = 0; i < clonedAddOns.size(); i++) {
             AddOn addon = clonedAddOns.get(i);
             addOnNames[i] = addon.getAddOnName() + " (₪" + addon.getPricePerOneAmount() + ")";
@@ -99,14 +134,27 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         });
 
         builder.setPositiveButton("Save", (dialog, which) -> {
-            product.setAddOns(clonedAddOns);
-            cartProducts.set(position, product); // במקום cartManager.getCart().set
+            Product updatedProduct = new Product(
+                    product.getProductId(),
+                    product.requiresFreshness(),
+                    product.getProductName(),
+                    product.getPrice(),
+                    product.getCategory(),
+                    product.getDescription(),
+                    clonedAddOns
+            );
+            updatedProduct.setImageUrl(product.getImageUrl());
+
+            cartManager.remove(product);
+            cartProducts.set(position, updatedProduct);
+            cartManager.addProductToCart(updatedProduct);
+
             notifyItemChanged(position);
             if (cartChangedListener != null) cartChangedListener.onCartChanged();
         });
 
         builder.setNegativeButton("Remove", (dialog, which) -> {
-            cartManager.removeProductFromCart(product);
+            cartManager.remove(product);
             cartProducts.remove(position);
             notifyItemRemoved(position);
             if (cartChangedListener != null) cartChangedListener.onCartChanged();
@@ -148,12 +196,32 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         return cartProducts.size();
     }
 
+    /**
+     * The type Cart view holder.
+     */
     static class CartViewHolder extends RecyclerView.ViewHolder {
+        /**
+         * The Product image.
+         */
         ImageView productImage;
+        /**
+         * The Product name.
+         */
         TextView productName;
+        /**
+         * The Product price.
+         */
         TextView productPrice;
+        /**
+         * The Product add ons.
+         */
         TextView productAddOns;
 
+        /**
+         * Instantiates a new Cart view holder.
+         *
+         * @param itemView the item view
+         */
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
             productImage = itemView.findViewById(R.id.cartItemImage);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="24dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- כותרת -->
+    <TextView
+        android:id="@+id/surveyQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Are you satisfied with the cafeteria service?"
+        android:textSize="20sp"
+        android:textColor="#000000"
+        android:layout_marginBottom="32dp"
+        android:textAlignment="center" />
+
+    <!-- כפתור מרוצה -->
+    <Button
+        android:id="@+id/buttonSatisfied"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Yes, I'm satisfied"
+        android:layout_marginBottom="16dp"
+/>
+
+    <!-- כפתור לא מרוצה -->
+    <Button
+        android:id="@+id/buttonNotSatisfied"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No, not satisfied" />
+</LinearLayout>

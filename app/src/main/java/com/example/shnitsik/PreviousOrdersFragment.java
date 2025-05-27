@@ -25,6 +25,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Previous orders fragment.
+ */
 public class PreviousOrdersFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -55,12 +58,15 @@ public class PreviousOrdersFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 userOrders.clear();
-                for (DataSnapshot orderSnap : snapshot.getChildren()) {
-                    Order order = orderSnap.getValue(Order.class);
-                    if (order != null && uid.equals(order.getOrdererUID())) {
-                        userOrders.add(order);
+                for (DataSnapshot timeGroupSnap : snapshot.getChildren()) {
+                    for (DataSnapshot orderSnap : timeGroupSnap.getChildren()) {
+                        Order order = orderSnap.getValue(Order.class);
+                        if (order != null && uid.equals(order.getOrdererUID())) {
+                            userOrders.add(order);
+                        }
                     }
                 }
+
                 adapter.notifyDataSetChanged();
             }
 

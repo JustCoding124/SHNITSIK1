@@ -2,9 +2,6 @@ package com.example.shnitsik.models;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import com.bumptech.glide.Glide;
-import com.example.shnitsik.R;
-
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +14,42 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.shnitsik.R;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Adapter for displaying a list of products in a RecyclerView.
+ * This adapter is responsible for managing and displaying product items, including category headers,
+ * in a scrollable list. It allows users to view product details, select addons, specify quantities,
+ * and add products to a shopping cart. It also supports filtering the product list by name.
+ *
+ * The adapter uses two distinct view types:
+ * 1.  A view for displaying category headers ({@code viewType == 0}).
+ * 2.  A view for displaying individual product items ({@code viewType == 1}).
+ *
+ * It interacts with a {@link CartManager} (obtained via {@link SharedCart}) to handle cart-related
+ * operations such as adding or removing products. Product images are loaded and displayed
+ * using the Glide library.
+ *
+ * Key functionalities include:
+ * - Displaying product name, description, price, and image.
+ * - Displaying category headers to organize products.
+ * - Filtering the product list based on a user-provided search query.
+ * - Presenting a dialog for selecting product addons and specifying the quantity for the main product.
+ * - Presenting a sub-dialog for specifying the quantity of each selected addon.
+ * - Adding products (along with their selected addons and quantities) to the shopping cart.
+ * - Removing products from the shopping cart.
+ * - Visually indicating (e.g., by changing background color) if a product is already in the cart.
+ *
+ * @see RecyclerView.Adapter
+ * @see MenuViewHolder
+ * @see CartManager
+ * @see SharedCart
+ */
 public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHolder> {
 
     private Context context;
@@ -28,6 +57,12 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
     private List<Product> productList;
     private final CartManager cartManager = SharedCart.getInstance().getCartManager();
 
+    /**
+     * Instantiates a new My menu adapter.
+     *
+     * @param context     the context
+     * @param productList the product list
+     */
     public MyMenuAdapter(Context context, List<Product> productList) {
         this.context = context;
         this.productList = productList;
@@ -45,6 +80,11 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
         }
     }
 
+    /**
+     * Sets original list.
+     *
+     * @param list the list
+     */
     public void setOriginalList(List<Product> list) {
         originalList = new ArrayList<>(list);
         productList = new ArrayList<>(list);
@@ -55,6 +95,11 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
         return productList.get(position).isHeader() ? 0 : 1;
     }
 
+    /**
+     * Filter list by name.
+     *
+     * @param query the query
+     */
     public void filterListByName(String query) {
         if (query.isEmpty()) {
             productList = new ArrayList<>(originalList);
@@ -86,19 +131,14 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
         } else {
             holder.textViewProductName.setText(product.getProductName());
             holder.textViewProductDescription.setText(product.getDescription());
-            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-                Glide.with(context)
-                        .load(product.getImageUrl())
-                        .into(holder.imageViewProduct);
-            }
+            Glide.with(context).clear(holder.imageViewProduct);
+            Glide.with(context)
+                    .load(product.getImageUrl())
+                    .into(holder.imageViewProduct);
 
             holder.textViewPrice.setText("Price: " + product.getPrice());
 
-            if (cartManager.getCart().contains(product)) {
-                holder.itemView.setBackgroundColor(Color.GREEN);
-            } else {
-                holder.itemView.setBackgroundColor(Color.WHITE);
-            }
+            holder.itemView.setBackgroundColor(cartManager.getCart().contains(product) ? Color.GREEN : Color.WHITE);
 
             holder.itemView.setOnClickListener(v -> showAddonDialog(position, product));
         }
@@ -147,8 +187,10 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
                     selectedAddOns.add(copiedAddOn);
                 });
             } else {
-                for (Iterator<AddOn> iterator = selectedAddOns.iterator(); iterator.hasNext();) {
-                    if (iterator.next().getAddOnName().equals(originalAddOn.getAddOnName())) {
+                Iterator<AddOn> iterator = selectedAddOns.iterator();
+                while (iterator.hasNext()) {
+                    AddOn addOn = iterator.next();
+                    if (addOn.getAddOnName().equals(originalAddOn.getAddOnName())) {
                         iterator.remove();
                         break;
                     }
@@ -158,21 +200,10 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
 
         builder.setPositiveButton("Add to Cart", (dialog, which) -> {
             int mainQuantity = productSeekBar.getProgress() + 1;
-
             for (int i = 0; i < mainQuantity; i++) {
-                Product productToCart = new Product(
-                        product.getProductId(),
-                        product.requiresFreshness(),
-                        product.getProductName(),
-                        product.getPrice(),
-                        product.getCategory(),
-                        product.getDescription(),
-                        new ArrayList<>(selectedAddOns)
-                );
-                productToCart.setImageUrl(product.getImageUrl());
-                cartManager.addProductToCart(productToCart);
+                Product newProduct = createProductInstanceFromMenu(product, selectedAddOns);
+                cartManager.addProductToCart(newProduct);
             }
-
             notifyItemChanged(position);
         });
 
@@ -217,26 +248,88 @@ public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHo
         builder.show();
     }
 
+    private Product createProductInstanceFromMenu(Product original, List<AddOn> selectedAddOns) {
+        List<AddOn> allAddOnsWithAmounts = new ArrayList<>();
+        for (AddOn addOn : original.getAddOns()) {
+            int selectedAmount = 0;
+            for (AddOn selected : selectedAddOns) {
+                if (selected.getAddOnName().equals(addOn.getAddOnName())) {
+                    selectedAmount = selected.getAmount();
+                    break;
+                }
+            }
+            AddOn cloned = new AddOn(addOn.getAddOnName(), addOn.getPricePerOneAmount());
+            cloned.setAmount(selectedAmount);
+            allAddOnsWithAmounts.add(cloned);
+        }
+        Product newProduct = new Product(
+                original.getProductId(),
+                original.requiresFreshness(),
+                original.getProductName(),
+                original.getPrice(),
+                original.getCategory(),
+                original.getDescription(),
+                allAddOnsWithAmounts
+        );
+        newProduct.setImageUrl(original.getImageUrl());
+        return newProduct;
+    }
+
     @Override
     public int getItemCount() {
         return productList.size();
     }
 
+    /**
+     * The type Category header view holder.
+     */
     public static class CategoryHeaderViewHolder extends MenuViewHolder {
+        /**
+         * The Category title.
+         */
         TextView categoryTitle;
+
+        /**
+         * Instantiates a new Category header view holder.
+         *
+         * @param itemView the item view
+         */
         public CategoryHeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             categoryTitle = itemView.findViewById(R.id.categoryTitleTextView);
         }
     }
 
+    /**
+     * The type Menu view holder.
+     */
     public static class MenuViewHolder extends RecyclerView.ViewHolder {
+        /**
+         * The Text view product name.
+         */
         TextView textViewProductName;
+        /**
+         * The Image view product.
+         */
         ImageView imageViewProduct;
+        /**
+         * The Text view product description.
+         */
         TextView textViewProductDescription;
+        /**
+         * The Text view price.
+         */
         TextView textViewPrice;
+        /**
+         * The Add another button.
+         */
         Button addAnotherButton;
 
+        /**
+         * Instantiates a new Menu view holder.
+         *
+         * @param itemView the item view
+         */
         public MenuViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewProduct = itemView.findViewById(R.id.itemImage);

@@ -27,10 +27,32 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import okhttp3.*;
 
+/**
+ * CheckoutActivity manages the order checkout process, including selecting pickup time,
+ * choosing a payment method (cash or credit card via Stripe), and finalizing the order.
+ * It fetches opening hours from Firebase, validates the selected pickup time,
+ * and handles payment processing. If payment is successful or cash payment is selected,
+ * the order is saved to Firebase, and a notification is scheduled for the ideal preparation time.
+ *
+ * Key functionalities:
+ * - Displays and allows selection of pickup date and time, validating against opening hours.
+ * - Fetches and displays current opening hours from Firebase.
+ * - Allows users to choose between paying with cash or credit card.
+ * - Integrates with Stripe for credit card payment processing.
+ * - Saves the confirmed order details to Firebase Realtime Database.
+ * - Calculates and sets an ideal preparation time for the order based on existing orders.
+ * - Schedules an Android AlarmManager notification for when the order is ideally ready.
+ * - Handles potential errors during fetching data, payment, or order saving.
+ *
+ * @author Ariel Kanitork
+ */
 public class CheckoutActivity extends AppCompatActivity {
     private TextView dateTimeTextView;
+    private boolean isTimeValid = false;
     private List<String> allowedDays = new ArrayList<>();
+    private final Map<String, int[]> openingHoursMap = new HashMap<>();
     private Button selectTimeButton, confirmOrderButton;
+    private boolean isPayingWithCard = false;
     private RadioGroup paymentMethodGroup;
     private CartManager cartManager;
     private Calendar selectedTime;
@@ -59,7 +81,8 @@ public class CheckoutActivity extends AppCompatActivity {
         paymentMethodGroup = findViewById(R.id.paymentMethodGroup);
         cartManager = SharedCart.getInstance().getCartManager();
         selectedTime = Calendar.getInstance();
-
+        Button btnBack = findViewById(R.id.btn_back);
+        btnBack.setOnClickListener(v -> finish()); // יחזיר לאקטיביטי הקודם
         PaymentConfiguration.init(getApplicationContext(), "pk_test_51RP3MuBDGmywb1ECke5sT7Upe1dsA7Q01y8pIhBLn0Ovgj4YoTXviTpGLwys093313TdZ0BlAu8PN52dIUk8A9uD00dJBCut95");
         paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
 
@@ -74,21 +97,19 @@ public class CheckoutActivity extends AppCompatActivity {
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String today = getTodayDayName();
                 for (DataSnapshot daySnap : snapshot.getChildren()) {
                     String day = daySnap.getKey();
                     boolean closed = daySnap.child("closed").getValue(Boolean.class) != null &&
                             daySnap.child("closed").getValue(Boolean.class);
                     if (!closed) allowedDays.add(day);
-                    if (day.equals(today)) {
-                        Integer oh = daySnap.child("openHour").getValue(Integer.class);
-                        Integer om = daySnap.child("openMinute").getValue(Integer.class);
-                        Integer ch = daySnap.child("closeHour").getValue(Integer.class);
-                        Integer cm = daySnap.child("closeMinute").getValue(Integer.class);
-                        if (oh != null) openHour = oh;
-                        if (om != null) openMinute = om;
-                        if (ch != null) closeHour = ch;
-                        if (cm != null) closeMinute = cm;
+
+                    Integer oh = daySnap.child("openHour").getValue(Integer.class);
+                    Integer om = daySnap.child("openMinute").getValue(Integer.class);
+                    Integer ch = daySnap.child("closeHour").getValue(Integer.class);
+                    Integer cm = daySnap.child("closeMinute").getValue(Integer.class);
+
+                    if (oh != null && om != null && ch != null && cm != null) {
+                        openingHoursMap.put(day, new int[]{oh, om, ch, cm});
                     }
                 }
             }
@@ -99,6 +120,7 @@ public class CheckoutActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void openDateTimePicker() {
         Calendar now = Calendar.getInstance();
@@ -119,6 +141,14 @@ public class CheckoutActivity extends AppCompatActivity {
                 selectedTime.set(Calendar.SECOND, 0);
                 selectedTime.set(Calendar.MILLISECOND, 0);
 
+                int[] hours = openingHoursMap.get(selectedDayName);
+                if (hours != null) {
+                    openHour = hours[0];
+                    openMinute = hours[1];
+                    closeHour = hours[2];
+                    closeMinute = hours[3];
+                }
+
                 Calendar openTime = (Calendar) selectedTime.clone();
                 openTime.set(Calendar.HOUR_OF_DAY, openHour);
                 openTime.set(Calendar.MINUTE, openMinute);
@@ -127,17 +157,19 @@ public class CheckoutActivity extends AppCompatActivity {
                 closeTime.set(Calendar.HOUR_OF_DAY, closeHour);
                 closeTime.set(Calendar.MINUTE, closeMinute);
 
-//                if (selectedTime.getTimeInMillis() < System.currentTimeMillis()) {
-//                    Toast.makeText(this, "Selected time has already passed", Toast.LENGTH_LONG).show();
-//                } else if (selectedTime.before(openTime) || selectedTime.after(closeTime)) {
-//                    Toast.makeText(this, "Allowed between " + formatTime(openHour, openMinute)
-//                            + " and " + formatTime(closeHour, closeMinute), Toast.LENGTH_LONG).show();
-//                } else {
-//                    String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
-//                    dateTimeTextView.setText("Selected Time: " + formatted);
-//                }
-                String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
-                dateTimeTextView.setText("Selected Time: " + formatted);
+
+                if (selectedTime.getTimeInMillis() < System.currentTimeMillis()) {
+                    Toast.makeText(this, "Selected time has already passed", Toast.LENGTH_LONG).show();
+                    isTimeValid = false;
+                } else if (selectedTime.before(openTime) || selectedTime.after(closeTime)) {
+                    Toast.makeText(this, "Allowed between " + formatTime(openHour, openMinute)
+                            + " and " + formatTime(closeHour, closeMinute), Toast.LENGTH_LONG).show();
+                    isTimeValid = false;
+                } else {
+                    String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(selectedTime.getTime());
+                    dateTimeTextView.setText("Selected Time: " + formatted);
+                    isTimeValid = true;
+                }
 
             }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
             timePickerDialog.show();
@@ -154,6 +186,10 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void confirmOrder() {
+        if (!isTimeValid) {
+            Toast.makeText(this, "Please select a valid time within opening hours", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (selectedTime == null || selectedTime.getTimeInMillis() < System.currentTimeMillis()) {
             Toast.makeText(this, "Please select a valid time", Toast.LENGTH_SHORT).show();
             return;
@@ -178,6 +214,7 @@ public class CheckoutActivity extends AppCompatActivity {
             int amount = (int) (cartManager.getTotalCartPrice() * 100);
             createPaymentIntent(amount, cartProducts, user);
         } else {
+            isPayingWithCard = false;
             saveOrder(cartProducts, user);
         }
     }
@@ -197,6 +234,11 @@ public class CheckoutActivity extends AppCompatActivity {
         order.setProducts(cartProducts);
         order.requiresFreshness();
         order.calculatePrepTime();
+        if (isPayingWithCard) {
+            order.setTotalToPay(0); // 💳 תשלום בוצע
+        } else {
+            order.setTotalToPay(order.getTotalOrderPrice()); // 💵 סכום לתשלום במזומן
+        }
 
         FirebaseDatabase.getInstance().getReference("Root/OrdersSortedByIdealTime")
                 .orderByChild("requestedTime")
@@ -227,6 +269,7 @@ public class CheckoutActivity extends AppCompatActivity {
                                 .addOnSuccessListener(aVoid -> {
                                     SharedCart.getInstance().getCartManager().getCart().clear();
                                     scheduleIdealTimeNotification(order);
+                                    scheduleRequestedTimeNotification(order);
                                     Toast.makeText(CheckoutActivity.this, "Order placed successfully!", Toast.LENGTH_LONG).show();
                                     finish();
                                 })
@@ -301,8 +344,10 @@ public class CheckoutActivity extends AppCompatActivity {
 
     private void onPaymentSheetResult(PaymentSheetResult result) {
         if (result instanceof PaymentSheetResult.Completed) {
+            isPayingWithCard = true;
             saveOrder(tempProducts, tempUser);
         } else {
+            isPayingWithCard = false; //  חובה לאפס כדי למנוע מצב מזויף
             Toast.makeText(this, "Payment cancelled or failed", Toast.LENGTH_SHORT).show();
         }
     }
@@ -311,7 +356,7 @@ public class CheckoutActivity extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
         intent.setPackage(getPackageName()); // חובה כדי למנוע SecurityException
         intent.putExtra("orderId", order.getoId());
-
+        intent.putExtra("type", "ideal");
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 getApplicationContext(),
                 order.getoId().hashCode(),
@@ -321,9 +366,25 @@ public class CheckoutActivity extends AppCompatActivity {
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-        // לשם בדיקה מיידית (5 שניות):
-        //alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, order.getIdealPrepTime(), pendingIntent);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, order.getIdealPrepTime(), pendingIntent);
     }
+    private void scheduleRequestedTimeNotification(Order order) {
+        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+        intent.setPackage(getPackageName());
+        intent.putExtra("orderId", order.getoId());
+        intent.putExtra("type", "requested"); // נוסיף סוג שונה לזיהוי בתוך הרסיבר
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                getApplicationContext(),
+                (order.getoId() + "_requested").hashCode(), // מזהה שונה מה־ideal
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, order.getRequestedTime(), pendingIntent);
+
+    }
+
 
 }

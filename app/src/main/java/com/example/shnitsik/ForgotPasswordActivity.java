@@ -20,6 +20,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * The type Forgot password activity.
+ */
 public class ForgotPasswordActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private TextView backToSignIn;
@@ -41,25 +44,32 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             else{send_link(emailEditText.getText().toString().trim());}});
 
     }
+
+    /**
+     * Is input valid boolean.
+     *
+     * @param email the email
+     * @return the boolean
+     */
     public static boolean isInputValid(String email) {
         return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-    private void send_link(String email){
-        if (isInputValid(emailEditText.getText().toString().trim())){
+    private void send_link(String email) {
+        if (isInputValid(email)) {
             auth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                // Notify the user that the reset email has been sent
-                                Toast.makeText(ForgotPasswordActivity.this, "Password reset email sent.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                // Handle failure
-                                Exception exception = task.getException();
-                                String errorMessage = (exception != null) ? exception.getMessage() : "Unknown error occurred";
-                                Toast.makeText(ForgotPasswordActivity.this, "Error " + errorMessage, Toast.LENGTH_SHORT).show();                            }
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(ForgotPasswordActivity.this,
+                                    "If an account with that email exists, a reset link has been sent.",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ForgotPasswordActivity.this,
+                                    "Failed to send reset link. Please check the email address.",
+                                    Toast.LENGTH_LONG).show();
                         }
                     });
+        } else {
+            emailEditText.setError("Please enter a valid email address.");
         }
     }
     private void  back_to_signin(){

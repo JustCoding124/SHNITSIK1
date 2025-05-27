@@ -30,6 +30,9 @@ import com.google.firebase.storage.StorageReference;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * The type Edit info fragment.
+ */
 public class EditInfoFragment extends Fragment {
 
     private Button btnSetOpeningHours, btnSaveProduct, btnDeleteProduct, btnAddAddon;

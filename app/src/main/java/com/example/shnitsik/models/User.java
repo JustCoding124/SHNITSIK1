@@ -4,12 +4,34 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 
+/**
+ * Represents a user within the Shnitsik application.
+ * This class encapsulates all information pertinent to a user,
+ * including their unique identifier, display name, email address,
+ * assigned role (distinguishing between administrators and regular users),
+ * and a chronologically ordered list of their past orders.
+ * The role of the user is represented by a boolean value:
+ * {@code true} indicates an administrator, while {@code false} indicates a regular user.
+ *
+ * @author Ariel Kanitork
+ */
 public class User {
     private String userName;
+    /**
+     * The Role.
+     */
     boolean role;//אם "אמת" אז זה אדמין אם "שקר" אז זה משתמש רגיל
     private String id;
     private String email;
-    private LinkedList<Order> orders = new LinkedList<Order>();
+
+    /**
+     * Instantiates a new User.
+     *
+     * @param userName the user name
+     * @param id       the id
+     * @param email    the email
+     * @param role     the role
+     */
     public User(String userName,String id, String email,boolean role) {
         this.id = id;
         this.email = email;
@@ -17,39 +39,62 @@ public class User {
         this.userName = userName;
     }
 
+    /**
+     * Gets user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Gets email.
+     *
+     * @return the email
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Sets email.
+     *
+     * @param email the email
+     */
     public void setEmail(String email) {
         this.email = email;
     }
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(String id) {
         this.id = id;
     }
+    public boolean getRole() {return role;}
 
-    public LinkedList<Order> getPastOrders() {
-        return this.orders;
-    }
+    public void setRole(boolean role) {this.role = role;}
 
-    public void setPastOrders(int len, Order[] pastOrders) {
-        this.orders.addAll(Arrays.asList(pastOrders));
-        sortOrders();
-    }
-    public void sortOrders(){
-        Collections.sort(this.orders, (o1, o2) -> Long.compare(o2.getDateOfOrder(), o1.getDateOfOrder()));
-    }
+
 }

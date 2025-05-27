@@ -21,6 +21,9 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * The type Main activity.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private EditText emailInput, passwordInput;
@@ -89,8 +92,11 @@ public class MainActivity extends AppCompatActivity {
             String savedPassword = preferences.getString("password", "");
             emailInput.setText(savedEmail);
             passwordInput.setText(savedPassword);
-            loginUser(); // Try login only after permission granted
+            rememberMeCheckBox.setChecked(true);
+            loginUser();
         }
+
+
     }
 
     private void loginUser() {

@@ -50,6 +50,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type Home fragment.
+ */
 public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -108,9 +111,26 @@ public class HomeFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * Admin on create.
+     *
+     * @param rootView the root view
+     */
     public void adminOnCreate(View rootView) {
         this.userSection.setVisibility(View.GONE);
         this.adminSection.setVisibility(View.VISIBLE);
+        Button logoutButton = rootView.findViewById(R.id.adminLogoutButton);
+        logoutButton.setOnClickListener(v -> {
+            // מנקה את כל ההעדפות האוטומטיות כדי למנוע התחברות מחדש
+            requireContext().getSharedPreferences("MyAppPrefs", getContext().MODE_PRIVATE)
+                    .edit().clear().apply();
+
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(getContext(), MainActivity.class));
+            requireActivity().finish();
+        });
+
+
 
         recyclerViewInitialize();
 
@@ -118,6 +138,9 @@ public class HomeFragment extends Fragment {
         this.topProduct = rootView.findViewById(R.id.topProductTextView);
     }
 
+    /**
+     * Recycler view initialize.
+     */
     public void recyclerViewInitialize() {
         long todayStartMillis = getStartOfTodayMillis();
         DatabaseReference ordersRef = database.getReference("Root/Orders");
@@ -145,6 +168,12 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
+    /**
+     * Gets start of today millis.
+     *
+     * @return the start of today millis
+     */
     public long getStartOfTodayMillis() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -153,11 +182,23 @@ public class HomeFragment extends Fragment {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
+
+    /**
+     * Gets today date.
+     *
+     * @return the today date
+     */
     public String getTodayDate() {
         Calendar calendar = Calendar.getInstance();  // מקבל את התאריך והשעה הנוכחיים
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  // קובע את פורמט התאריך
         return dateFormat.format(calendar.getTime());  // מחזיר את התאריך בפורמט הרצוי
     }
+
+    /**
+     * Update order load text.
+     *
+     * @param orders the orders
+     */
     public void updateOrderLoadText(List<Order> orders) {
         if (orders.isEmpty()) {
             this.orderLoadTextView.setText("No Orders Yet");
@@ -167,6 +208,12 @@ public class HomeFragment extends Fragment {
             this.orderLoadTextView.setText("Today's Peak Hour: " + peakHour);
         }
     }
+
+    /**
+     * Update top product.
+     *
+     * @param orders the orders
+     */
     public void updateTopProduct(List<Order> orders) {
         if (orders.isEmpty()) {
             this.orderLoadTextView.setText("No Orders Currently");
@@ -175,6 +222,13 @@ public class HomeFragment extends Fragment {
             this.topProduct.setText("Today's Top Selling Product: " + topProduct1);
         }
     }
+
+    /**
+     * Calculate peak order hour string.
+     *
+     * @param orders the orders
+     * @return the string
+     */
     public String calculatePeakOrderHour(List<Order> orders) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");  // פורמט שעה (שעה ודקה)
         Map<String, Integer> hourCounts = new HashMap<>();
@@ -199,6 +253,13 @@ public class HomeFragment extends Fragment {
 
         return peakHour != null ? peakHour + ":00" : "Could Not Calculate";
     }
+
+    /**
+     * Is today boolean.
+     *
+     * @param date the date
+     * @return the boolean
+     */
     public boolean isToday(long date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date(date));
@@ -207,6 +268,13 @@ public class HomeFragment extends Fragment {
         return calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                 calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
     }
+
+    /**
+     * Calculate product frequency map.
+     *
+     * @param orders the orders
+     * @return the map
+     */
     public Map<String, Integer> calculateProductFrequency(@NonNull List<Order> orders) {
         Map<String, Integer> productFrequency = new HashMap<>();
 
@@ -223,6 +291,12 @@ public class HomeFragment extends Fragment {
         return productFrequency;
     }
 
+    /**
+     * Find top product string.
+     *
+     * @param productFrequency the product frequency
+     * @return the string
+     */
     public String findTopProduct(Map<String, Integer> productFrequency) {
         String topProduct = null;
         int maxFrequency = 0;
@@ -236,7 +310,14 @@ public class HomeFragment extends Fragment {
 
         return topProduct + " Purchased " + maxFrequency + " times today";
     }
-    // עבור משתמש רגיל(לא אדמין)
+
+    /**
+     * User on create.
+     *
+     * @param rootView     the root view
+     * @param userIdlambda the user idlambda
+     */
+// עבור משתמש רגיל(לא אדמין)
     public void userOnCreate(View rootView, String userIdlambda){
         userGreeting(rootView, userIdlambda);
         this.adminSection.setVisibility(View.GONE);
@@ -277,6 +358,10 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
+    /**
+     * Recycler view initialize for user.
+     */
     public void recyclerViewInitializeForUser() {
         FirebaseFirestore.getInstance()
                 .collection("products")
@@ -307,6 +392,13 @@ public class HomeFragment extends Fragment {
                 );
 
     }
+
+    /**
+     * User greeting.
+     *
+     * @param rootView     the root view
+     * @param userIdlambda the user idlambda
+     */
     public void userGreeting(View rootView, String userIdlambda){
         TextView greetingTextView = rootView.findViewById(R.id.greetingTextView);
         database.getReference("Root").child("Users").child(userIdlambda)
@@ -328,7 +420,10 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    public void profileChange(){
+    /**
+     * Profile change.
+     */
+    public void profileChange() {
         // יצירת Layout ראשי (LinearLayout)
         LinearLayout layout = new LinearLayout(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -337,30 +432,8 @@ public class HomeFragment extends Fragment {
         // יצירת EditText לשם משתמש חדש
         final EditText usernameInput = new EditText(getContext());
         usernameInput.setHint("New Username");
+        usernameInput.setVisibility(View.VISIBLE);
         layout.addView(usernameInput);
-
-        // יצירת EditText לאימייל חדש
-        final EditText emailInput = new EditText(getContext());
-        emailInput.setHint("New Email Address");
-        emailInput.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        layout.addView(emailInput);
-
-        //  EditText לססמא
-        final EditText passwordInput = new EditText(getContext());
-        passwordInput.setHint("Current Password");
-        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        layout.addView(passwordInput);
-
-
-        // יצירת CheckBox לעדכון אימייל
-        final CheckBox checkBoxEmail = new CheckBox(getContext());
-        checkBoxEmail.setText("Update Email Address");
-        layout.addView(checkBoxEmail);
-
-        // יצירת CheckBox לעדכון שם משתמש
-        final CheckBox checkBoxUsername = new CheckBox(getContext());
-        checkBoxUsername.setText("Update Username");
-        layout.addView(checkBoxUsername);
 
         // כפתור לעדכון פרופיל
         Button updateButton = new Button(getContext());
@@ -372,43 +445,26 @@ public class HomeFragment extends Fragment {
         resetPasswordButton.setText("Replace Password");
         layout.addView(resetPasswordButton);
 
+        // כפתור התנתקות
+        Button logoutButton = new Button(getContext());
+        logoutButton.setText("LOG OUT");
+        layout.addView(logoutButton);
+
         // יצירת AlertDialog עם ה-Layout המוגדר
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setView(layout).setCancelable(true);
 
-        // מאזין ל-CheckBox של עדכון אימייל
-        checkBoxEmail.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                emailInput.setVisibility(View.VISIBLE);
-            } else {
-                emailInput.setVisibility(View.GONE);
-            }
-        });
-
-        // מאזין ל-CheckBox של עדכון שם משתמש
-        checkBoxUsername.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                usernameInput.setVisibility(View.VISIBLE);
-            } else {
-                usernameInput.setVisibility(View.GONE);
-            }
-        });
-
         // מאזין לכפתור עדכון פרופיל
         updateButton.setOnClickListener(v -> {
-            if (checkBoxEmail.isChecked()) {
-                String email = emailInput.getText().toString();
-                if (!email.isEmpty()) {
-                    updateEmail(email, passwordInput.getText().toString());
-                }
-            }
-            if (checkBoxUsername.isChecked()) {
-                String username = usernameInput.getText().toString();
-                if (!username.isEmpty()) {
-                    updateUsername(username);
-                }
+            String username = usernameInput.getText().toString().trim();
+            if (username.isEmpty()) {
+                usernameInput.setError("Please enter a new username");
+            } else {
+                updateUsername(username);
             }
         });
+
+
 
         // מאזין לכפתור לשחזור ססמא
         resetPasswordButton.setOnClickListener(v -> {
@@ -418,46 +474,34 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        // מאזין לכפתור התנתקות
+        logoutButton.setOnClickListener(v -> {
+            // נקה את ההעדפות כדי למנוע התחברות אוטומטית
+            requireContext().getSharedPreferences("MyAppPrefs", getContext().MODE_PRIVATE)
+                    .edit().clear().apply();
+
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(getContext(), MainActivity.class));
+            requireActivity().finish();
+        });
+
+
         // הצגת דיאלוג
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-    private void updateEmail(String newEmail, String currentPassword) {
-        if (this.currentUser != null) {
-            // אם המשתמש מחובר, נבצע אוטנטיקציה מחדש עם הסיסמה הנוכחית
-            AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), currentPassword);
-
-            // אתחול מחדש של האותנטיקציה
-            currentUser.reauthenticate(credential).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    // אם האותנטיקציה הצליחה, נעדכן את האימייל
-                    currentUser.updateEmail(newEmail)
-                            .addOnCompleteListener(task1 -> {
-                                if (task1.isSuccessful()) {
-                                    Toast.makeText(getContext(), "Email Updated Successfully", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(getContext(), "Error Updating Email", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                } else {
-                    // אם האותנטיקציה נכשלה
-                    Toast.makeText(getContext(), "Given Password Incorrect", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
     // פונקציה לעדכון שם משתמש
-    private void updateUsername(String newUsername ) {
-        if (this.currentUser != null) {
-            // אם המשתמש מחובר, נעדכן את שם המשתמש ב-Firebase Realtime Database
-            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Root").child("Users")
-                    .child(currentUser.getUid());
-            userRef.child("userName").setValue(newUsername)
+    private void updateUsername(String newUsername) {
+        if (currentUser != null) {
+            FirebaseDatabase.getInstance().getReference("Root/Users")
+                    .child(currentUser.getUid())
+                    .child("userName")
+                    .setValue(newUsername)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(getContext(), "Username Updated Successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Username updated successfully", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(getContext(), "Error Updating Username", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Failed to update username", Toast.LENGTH_SHORT).show();
                         }
                     });
         }
@@ -474,9 +518,17 @@ public class HomeFragment extends Fragment {
                     }
                 });
     }
+
+    /**
+     * Cart dialog.
+     */
     public void cartDialog() {
         startActivity(new Intent(getContext(), CartActivity.class));
     }
+
+    /**
+     * Payment.
+     */
     public void payment() {
         CartManager cart = SharedCart.getInstance().getCartManager();
         if (cart.getCart().isEmpty()) {

@@ -31,6 +31,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * The type Register an employee fragment.
+ */
 public class RegisterAnEmployeeFragment extends Fragment {
     private EditText searchEditText;
     private ListView usersListView;
