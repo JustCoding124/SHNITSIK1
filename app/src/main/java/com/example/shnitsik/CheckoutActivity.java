@@ -28,23 +28,7 @@ import java.util.*;
 import okhttp3.*;
 
 /**
- * CheckoutActivity manages the order checkout process, including selecting pickup time,
- * choosing a payment method (cash or credit card via Stripe), and finalizing the order.
- * It fetches opening hours from Firebase, validates the selected pickup time,
- * and handles payment processing. If payment is successful or cash payment is selected,
- * the order is saved to Firebase, and a notification is scheduled for the ideal preparation time.
- *
- * Key functionalities:
- * - Displays and allows selection of pickup date and time, validating against opening hours.
- * - Fetches and displays current opening hours from Firebase.
- * - Allows users to choose between paying with cash or credit card.
- * - Integrates with Stripe for credit card payment processing.
- * - Saves the confirmed order details to Firebase Realtime Database.
- * - Calculates and sets an ideal preparation time for the order based on existing orders.
- * - Schedules an Android AlarmManager notification for when the order is ideally ready.
- * - Handles potential errors during fetching data, payment, or order saving.
- *
- * @author Ariel Kanitork
+ * The type Checkout activity.
  */
 public class CheckoutActivity extends AppCompatActivity {
     private TextView dateTimeTextView;

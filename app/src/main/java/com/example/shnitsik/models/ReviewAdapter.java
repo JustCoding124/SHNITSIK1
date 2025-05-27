@@ -16,27 +16,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.List;
 
 /**
- * Adapter for displaying a list of reviews in a RecyclerView.
- * This adapter is responsible for creating view holders, binding data to them,
- * and handling user interactions such as deleting a review.
- *
- * @author Ariel Kanitork
- *
- * The {@code ReviewAdapter} class serves as a bridge between the {@link RecyclerView} and the
- * underlying data set (a list of {@link Review} objects). It manages the creation of individual
- * item views ({@link ReviewViewHolder}) and binds the specific data from each {@code Review}
- * object to its corresponding view.
- *
- * It holds references to:
- * <ul>
- *   <li>{@code context}: The {@link Context} from which the adapter is created. This is
- *       used for layout inflation and displaying dialogs or toasts.</li>
- *   <li>{@code reviewList}: A {@link List} of {@link Review} objects that represents the
- *       data to be displayed in the RecyclerView.</li>
- *   <li>{@code currentUserId}: A {@link String} representing the ID of the currently logged-in
- *       user. This is used to determine if a user can delete a specific review (only the author
- *       of the review can delete it).</li>
- * </ul>
+ * The type Review adapter.
  */
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder> {
 
@@ -110,7 +90,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
         /**
          * The Title.
          */
-        TextView title, /**
+        TextView title,
+        /**
          * The Subtitle.
          */
         subtitle;

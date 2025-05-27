@@ -1,20 +1,7 @@
 package com.example.shnitsik.models;
 
 /**
- * Represents a review object.
- * This class encapsulates the details of a review, including its unique identifier (ID),
- * the ID of the user who wrote the review, the actual review content (text),
- * the username of the reviewer, and the timestamp indicating when the review was created.
- *
- * The class provides two constructors: a default no-argument constructor, which is
- * often required by frameworks like Firebase for deserialization, and a parameterized
- * constructor to initialize a Review object with all its attributes.
- *
- * It also includes standard getter methods to access the private fields and setter
- * methods to modify the `id`, `userId`, and `text` fields. The `userName` and `timestamp`
- * fields have only getter methods, implying they are typically set at creation and not modified afterwards.
- *
- * @author Ariel Kanitork
+ * The type Review.
  */
 public class Review {
     private String id;

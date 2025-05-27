@@ -21,24 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter for displaying products within a shopping cart in a RecyclerView.
- * This adapter is responsible for taking a list of {@link Product} objects and
- * presenting them as individual items in the cart UI. It handles the creation
- * of view holders for each item and binds the product data (name, price, image, add-ons)
- * to the corresponding views within the item layout.
- *
- * Furthermore, this adapter facilitates user interaction with cart items by:
- * <ul>
- *     <li>Displaying an edit dialog when an item is clicked, allowing users to modify the selected add-ons and their quantities.</li>
- *     <li>Providing options within the edit dialog to save changes to the product or remove it entirely from the cart.</li>
- *     <li>Notifying a {@link OnCartChangedListener} when changes occur in the cart (e.g., item updated or removed),
- *         enabling other components (like a total price display) to react accordingly.</li>
- * </ul>
- *
- * It collaborates with a {@link CartManager} to persist changes made to the cart,
- * such as adding, updating, or removing products.
- *
- * @author Ariel Kanitork
+ * The type Cart adapter.
  */
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
     private final List<Product> cartProducts;
@@ -99,14 +82,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.itemView.setOnClickListener(v -> showEditDialog(product, position));
     }
 
-    /**
-     * Shows an edit dialog for a product in the cart.
-     * This dialog allows the user to modify the add-ons of the product,
-     * save the changes, remove the product from the cart, or cancel the operation.
-     *
-     * @param product The product to be edited.
-     * @param position The position of the product in the cart list.
-     */
     private void showEditDialog(Product product, int position) {
         List<AddOn> clonedAddOns = new ArrayList<>();
         for (AddOn addOn : product.getAddOns()) {

@@ -15,20 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Adapter for displaying a list of previous orders in a RecyclerView.
- * This adapter is responsible for taking a list of {@link Order} objects and
- * efficiently displaying them as individual items within a scrolling list.
- * Each item in the list will utilize the standard Android layout `android.R.layout.simple_list_item_2`,
- * which provides two lines of text.
- * The first line (title) will show a concatenated string of product names
- * and their respective add-ons for a given order.
- * The second line (subtitle) will display the date and time the order was placed.
- *
- * This adapter manages the creation of ViewHolders ({@link OrderViewHolder})
- * which hold references to the views for each item, and binds the data from
- * the {@link Order} objects to these views.
- *
- * @author Ariel Kanitork
+ * The type Previous orders adapter.
  */
 public class PreviousOrdersAdapter extends RecyclerView.Adapter<PreviousOrdersAdapter.OrderViewHolder> {
 
@@ -100,7 +87,8 @@ public class PreviousOrdersAdapter extends RecyclerView.Adapter<PreviousOrdersAd
         /**
          * The Title.
          */
-        TextView title, /**
+        TextView title,
+        /**
          * The Subtitle.
          */
         subtitle;

@@ -22,33 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Adapter for displaying a list of products in a RecyclerView.
- * This adapter is responsible for managing and displaying product items, including category headers,
- * in a scrollable list. It allows users to view product details, select addons, specify quantities,
- * and add products to a shopping cart. It also supports filtering the product list by name.
- *
- * The adapter uses two distinct view types:
- * 1.  A view for displaying category headers ({@code viewType == 0}).
- * 2.  A view for displaying individual product items ({@code viewType == 1}).
- *
- * It interacts with a {@link CartManager} (obtained via {@link SharedCart}) to handle cart-related
- * operations such as adding or removing products. Product images are loaded and displayed
- * using the Glide library.
- *
- * Key functionalities include:
- * - Displaying product name, description, price, and image.
- * - Displaying category headers to organize products.
- * - Filtering the product list based on a user-provided search query.
- * - Presenting a dialog for selecting product addons and specifying the quantity for the main product.
- * - Presenting a sub-dialog for specifying the quantity of each selected addon.
- * - Adding products (along with their selected addons and quantities) to the shopping cart.
- * - Removing products from the shopping cart.
- * - Visually indicating (e.g., by changing background color) if a product is already in the cart.
- *
- * @see RecyclerView.Adapter
- * @see MenuViewHolder
- * @see CartManager
- * @see SharedCart
+ * The type My menu adapter.
  */
 public class MyMenuAdapter extends RecyclerView.Adapter<MyMenuAdapter.MenuViewHolder> {
 

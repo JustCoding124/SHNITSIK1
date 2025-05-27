@@ -5,15 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 /**
- * Represents a user within the Shnitsik application.
- * This class encapsulates all information pertinent to a user,
- * including their unique identifier, display name, email address,
- * assigned role (distinguishing between administrators and regular users),
- * and a chronologically ordered list of their past orders.
- * The role of the user is represented by a boolean value:
- * {@code true} indicates an administrator, while {@code false} indicates a regular user.
- *
- * @author Ariel Kanitork
+ * The type User.
  */
 public class User {
     private String userName;
@@ -92,8 +84,19 @@ public class User {
     public void setId(String id) {
         this.id = id;
     }
+
+    /**
+     * Gets role.
+     *
+     * @return the role
+     */
     public boolean getRole() {return role;}
 
+    /**
+     * Sets role.
+     *
+     * @param role the role
+     */
     public void setRole(boolean role) {this.role = role;}
 
 

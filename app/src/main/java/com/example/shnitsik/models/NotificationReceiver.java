@@ -11,34 +11,12 @@ import android.os.Build;
 import com.example.shnitsik.R;
 
 /**
- * NotificationReceiver is a {@link BroadcastReceiver} that listens for scheduled
- * broadcast intents related to order status and displays system notifications accordingly.
- * <p>
- * It supports two types of notifications:
- * <ul>
- *     <li><b>ideal</b>: Indicates that the order is ready for pickup (idealPrepTime)</li>
- *     <li><b>requested</b>: Indicates that the requested pickup time has arrived (requestedTime)</li>
- * </ul>
- *
- * The Intent used to trigger this receiver should include:
- * <ul>
- *     <li><code>orderId</code>: The unique order identifier</li>
- *     <li><code>type</code>: (Optional) Either "ideal" or "requested" (defaults to "ideal")</li>
- * </ul>
- *
- * @author Ariel Kanitork
+ * The type Notification receiver.
  */
 public class NotificationReceiver extends BroadcastReceiver {
 
     private static final String CHANNEL_ID = "order_channel";
 
-    /**
-     * Called when the receiver receives a broadcast.
-     * Constructs and displays a notification based on the order ID and type.
-     *
-     * @param context The context in which the receiver is running.
-     * @param intent  The broadcast intent containing order details.
-     */
     @Override
     public void onReceive(Context context, Intent intent) {
         String orderId = intent.getStringExtra("orderId");
@@ -78,12 +56,6 @@ public class NotificationReceiver extends BroadcastReceiver {
         manager.notify((orderId + "_" + type).hashCode(), builder.build());
     }
 
-    /**
-     * Creates the notification channel required for API level 26 and above.
-     * Ensures that notifications can be displayed on modern Android versions.
-     *
-     * @param context The context used to access system services.
-     */
     private void createNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Order Notifications";

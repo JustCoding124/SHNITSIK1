@@ -22,16 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Adapter for displaying a list of {@link Order} objects within a RecyclerView.
- * This class is responsible for creating the individual views for each order item,
- * binding the order data to these views, and handling user interactions such as
- * changing the order status or viewing detailed order information.
- *
- * It utilizes a {@link MyViewHolder} to cache view lookups for performance.
- * The adapter interacts with Firebase Realtime Database to update the 'isFinished'
- * status of an order and sends notifications when an order is marked as ready.
- *
- * @author Ariel Kanitork
+ * The type My adapter.
  */
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     private Context context;

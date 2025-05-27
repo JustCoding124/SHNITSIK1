@@ -5,27 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Manages the shopping cart for an application.
- * This class is responsible for handling operations related to products within a user's shopping cart,
- * such as adding, removing, and calculating the total cost.
- * It utilizes a {@link HashSet} to store {@link Product} objects, ensuring that each unique product
- * (based on its {@code equals} and {@code hashCode} implementation, which typically relies on the product ID)
- * is present only once. This is particularly useful for scenarios where adding the same product multiple
- * times might be handled by quantity updates rather than duplicate entries, or where the cart represents
- * a set of distinct items.
- * * Note: While the cart uses a {@link HashSet} to store products, uniqueness is only enforced
- *  * if the {@link Product} class properly overrides {@code equals()} and {@code hashCode()}.
- *  * Otherwise, each added {@link Product} instance, even with identical content, may be treated as distinct.
- * A key feature of this class is its use of product cloning. When a {@link Product} is added to the cart,
- * a deep copy of the product is created and stored. This prevents external modifications to the original
- * product object from affecting the state of the product within the cart, and vice-versa. This ensures
- * data integrity and isolation between the cart's contents and the broader application's product catalog.
- *
- * The cart itself is represented by the private instance variable {@code cart}, which is a {@code HashSet<Product>}.
- * This choice of data structure implies that the order of items in the cart is not guaranteed and that
- * duplicate product entries (based on their equality) are automatically handled.
- *
- * @author Ariel Kanitork
+ * The type Cart manager.
  */
 public class CartManager {
     private HashSet<Product> cart = new HashSet<>(); // Store cart items
@@ -104,13 +84,6 @@ public class CartManager {
         }
         return total;
     }
-    /**
-     * Creates a deep copy of the given product, including its add-ons,
-     * to avoid shared references when adding to the cart.
-     *
-     * @param original the product to clone
-     * @return a new product instance with the same data
-     */
 
     private Product cloneProduct(Product original) {
         Product clone = new Product(

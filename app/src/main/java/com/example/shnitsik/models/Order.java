@@ -5,12 +5,7 @@ import com.google.firebase.database.*;
 import java.util.*;
 
 /**
- * Represents an order placed by a user.
- * This class encapsulates all details related to an order, including products,
- * pricing, preparation times, and status. It interacts with Firebase for data
- * persistence and synchronization, particularly for calculating ideal preparation times.
- *
- * @author Ariel Kanitork
+ * The type Order.
  */
 public class Order {
     private long prepTime;

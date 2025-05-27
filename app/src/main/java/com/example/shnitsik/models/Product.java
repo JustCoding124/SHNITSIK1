@@ -3,26 +3,7 @@ package com.example.shnitsik.models;
 import java.util.List;
 
 /**
- * Represents a product within the application, such as a food item in a restaurant menu.
- * This class encapsulates all relevant details of a product, including its identification,
- * pricing, categorization, and any associated modifications or add-ons. It also handles
- * properties like preparation time and whether the product needs to be fresh, which can be
- * crucial for inventory and order management. Additionally, it supports a visual representation
- * through an image URL and can function as a header for grouping products in a user interface.
- *
- * The class is designed to be compatible with Firestore, as indicated by the presence of a
- * no-argument constructor. It provides constructors for creating fully detailed product instances
- * and simpler instances primarily used as UI headers.
- *
- * The variables within this class serve specific purposes:
- * <ul>
- *     <li>{@code prepTime}: A {@code long} representing the estimated preparation time for the product in minutes. This is useful for kitchen order systems or for providing customers with estimated wait times.</li>
- *     <li>{@code productId}: A {@code String} that uniquely identifies the product. This is essential for database operations, order tracking, and inventory management.</li>
- *     <li>{@code productName}: A {@code String} representing the display name of the product (e.g., "Chicken Schnitzel", "Caesar Salad").</li>
- *     <li>{@code price}: A {@code double} indicating the base price of the product before any add-ons or modifications.</li>
- *     <li>{@code isHeader}: A {@code boolean} flag that, when true, signifies this product instance is being used as a header or separator in a list of products, typically for grouping items by category in a UI. If true, the {@code productName} might be used as the header title.</li>
- *     <li>{@code category}: A {@code String} specifying the category the product belongs to (e.g., "Main Courses", "Appetizers", "Drinks"). This helps in organizing and filtering products.</li>
- *     <li>{@code description}: A {@code String} providing a more detailed description of the product, which could include ingredients, preparation methods, or portion size.</li>
+ * The type Product.
  */
 public class Product {
     // זמן הכנה בדקות

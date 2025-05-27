@@ -20,13 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * SurveyActivity allows users to submit a satisfaction vote regarding the cafeteria.
- * The user can vote "satisfied" or "not satisfied". The result is saved in Firestore
- * under the user's UID in the "Survey" collection, replacing any previous vote.
- * After voting, the activity finishes and returns RESULT_OK to the calling fragment.
- *
- * This activity demonstrates proper usage of ActivityResultLauncher and Firestore update logic.
- * It ensures that each user can only have one active vote.
+ * The type Survey activity.
  */
 public class SurveyActivity extends AppCompatActivity {
 
@@ -34,12 +28,6 @@ public class SurveyActivity extends AppCompatActivity {
     private FirebaseFirestore firestore;
     private FirebaseUser currentUser;
 
-    /**
-     * Initializes the activity, views, Firebase instances,
-     * and sets click listeners for voting buttons.
-     *
-     * @param savedInstanceState previous state (if any)
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,12 +56,6 @@ public class SurveyActivity extends AppCompatActivity {
         notSatisfiedButton.setOnClickListener(v -> submitSurvey(false));
     }
 
-    /**
-     * Submits the user's satisfaction vote to Firestore.
-     * If a vote already exists for this user, it will be overwritten.
-     *
-     * @param isSatisfied true if the user is satisfied, false otherwise
-     */
     private void submitSurvey(boolean isSatisfied){
         String uid = currentUser.getUid();
         Map<String, Object> surveyData = new HashMap<>();

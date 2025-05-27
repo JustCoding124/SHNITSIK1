@@ -1,36 +1,7 @@
 package com.example.shnitsik.models;
 
 /**
- * Represents an individual add-on item that can be offered alongside a primary product or service.
- * This class encapsulates the essential details of an add-on, allowing for its management
- * within a larger system, such as an e-commerce platform or a point-of-sale application.
- *
- * The core purpose of this class is to model an optional item that a customer might choose
- * to include with their main purchase. For example, in a food ordering system, an "AddOn"
- * could represent "Extra Cheese" for a pizza or "French Fries" as a side for a burger.
- *
- * Key attributes of an AddOn include its name, the quantity desired, and the price for a single unit.
- *
- * **Variable Analysis:**
- *
- * - {@code private String addOnName;}:
- *   This field stores the descriptive name of the add-on. It's a crucial identifier for the user
- *   and for internal tracking. For instance, "Extra Pickles", "Gift Wrapping", or "Extended Warranty".
- *   The {@code String} type is appropriate for textual representation. It's declared as {@code private}
- *   to enforce encapsulation, meaning its direct modification from outside the class is prevented,
- *   and access is typically managed through getter methods.
- *
- * - {@code private int amount = 1;}:
- *   This integer variable represents the quantity of this specific add-on that has been selected or
- *   is being considered. It's initialized to {@code 1} by default, implying that if an add-on is
- *   created, it's typically with an initial quantity of one. This is a common scenario, but the
- *   quantity can be adjusted later using the {@code setAmount} method. For example, a customer might
- *   want 2 portions of "Extra Sauce". The {@code int} type is suitable for whole number quantities.
- *   Like {@code addOnName}, it's {@code private} for encapsulation.
- *
- * - {@code private double pricePerOneAmount;}:
- *   This field holds the monetary cost for a single unit of this add-on. For example, if "Extra Cheese"
- *   costs $0.50, this variable would store {@code 0.5}. The {@code double} type is used to accommodate
+ * The type Add on.
  */
 public class AddOn {
     private String addOnName;
